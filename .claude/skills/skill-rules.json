@@ -1,58 +1,213 @@
 {
-  "skill-developer": {
-    "keywordTriggers": [
-      "create skill",
-      "new skill",
-      "skill for",
-      "add skill",
-      "make a skill"
-    ],
-    "description": "Meta-skill for creating and managing other skills"
-  },
-  "rrna-prediction-patterns": {
-    "keywordTriggers": [
-      "rRNA",
-      "ribosomal",
-      "16S",
-      "18S",
-      "23S",
-      "28S",
-      "5S",
-      "5.8S",
-      "rRNA detection",
-      "rRNA prediction"
-    ],
-    "fileTriggers": {
-      "pathPatterns": [
-        "backend/rrna/**/*.py",
-        "backend/**/rrna*.py",
-        "cli/**/rrna*.py"
-      ]
+  "version": "1.0.0",
+  "skills": {
+    "skill-developer": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "promptTriggers": {
+        "keywords": [
+          "create skill",
+          "new skill",
+          "skill for",
+          "add skill",
+          "make a skill"
+        ]
+      },
+      "description": "Meta-skill for creating and managing other skills"
     },
-    "description": "Guidelines for rRNA detection and prediction (prokaryotic and eukaryotic)"
-  },
-  "phylogenetic-methods": {
-    "keywordTriggers": [
-      "phylogenetic",
-      "phylogeny",
-      "tree",
-      "neighbor joining",
-      "maximum likelihood",
-      "bayesian",
-      "bootstrap",
-      "cladogram",
-      "phylogram",
-      "newick",
-      "alignment"
-    ],
-    "fileTriggers": {
-      "pathPatterns": [
-        "backend/phylo/**/*.py",
-        "backend/**/tree*.py",
-        "backend/**/phylo*.py",
-        "cli/**/tree*.py"
-      ]
+    "rrna-prediction-patterns": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "rRNA",
+          "ribosomal",
+          "ribosomal RNA",
+          "16S",
+          "18S",
+          "23S",
+          "28S",
+          "5S",
+          "5.8S",
+          "rRNA detection",
+          "rRNA prediction",
+          "rRNA identification",
+          "HMM model",
+          "BLAST search",
+          "conserved regions",
+          "prokaryotic rRNA",
+          "eukaryotic rRNA",
+          "SSU",
+          "LSU"
+        ],
+        "intentPatterns": [
+          "(detect|identify|find|predict|search).{0,20}(rRNA|ribosomal)",
+          "(16S|18S|23S|28S|5S|5\\.8S).{0,20}(detection|prediction|analysis)",
+          "(rRNA|ribosomal).{0,20}(sequence|gene|detection|prediction)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/rrna/**/*.py",
+          "backend/**/rrna*.py",
+          "cli/**/rrna*.py",
+          "tests/**/test_rrna*.py"
+        ],
+        "contentPatterns": [
+          "class.*rRNA",
+          "def.*rrna.*detect",
+          "def.*rrna.*predict",
+          "hmmer|HMM.*profile",
+          "SILVA|RDP|Rfam"
+        ]
+      },
+      "description": "Guidelines for rRNA detection and prediction including prokaryotic (16S, 23S, 5S) and eukaryotic (18S, 28S, 5.8S, 5S) ribosomal RNA. Covers sequence patterns, secondary structure, HMM models, blast-based detection, length validation, and quality scoring for rRNA identification."
     },
-    "description": "Guidelines for phylogenetic tree building and analysis methods"
+    "phylogenetic-methods": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "phylogenetic",
+          "phylogeny",
+          "tree",
+          "neighbor joining",
+          "maximum likelihood",
+          "bayesian",
+          "bootstrap",
+          "cladogram",
+          "phylogram",
+          "newick",
+          "nexus",
+          "alignment",
+          "UPGMA",
+          "NJ",
+          "RAxML",
+          "IQ-TREE",
+          "MrBayes",
+          "distance matrix",
+          "consensus tree"
+        ],
+        "intentPatterns": [
+          "(build|construct|create|generate).{0,20}(tree|phylogen)",
+          "(align|alignment).{0,20}sequence",
+          "(bootstrap|consensus).{0,20}(analysis|tree)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/phylo/**/*.py",
+          "backend/**/tree*.py",
+          "backend/**/phylo*.py",
+          "backend/**/alignment*.py",
+          "cli/**/tree*.py",
+          "tests/**/test_phylo*.py"
+        ],
+        "contentPatterns": [
+          "class.*(Tree|Phylo|Alignment)",
+          "def.*(build_tree|align|bootstrap)",
+          "(UPGMA|NJ|RAxML|MUSCLE|MAFFT)"
+        ]
+      },
+      "description": "Comprehensive guide to phylogenetic tree building methods including distance-based (UPGMA, Neighbor-Joining), maximum likelihood (RAxML, IQ-TREE), and Bayesian inference (MrBayes). Covers multiple sequence alignment, distance matrices, bootstrap analysis, consensus methods, tree formats (Newick, Nexus), and tree comparison metrics."
+    },
+    "project-architecture-patterns": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "FastAPI",
+          "architecture",
+          "project structure",
+          "API design",
+          "service layer",
+          "Pydantic",
+          "SQLAlchemy",
+          "Celery",
+          "async",
+          "dependency injection",
+          "pytest",
+          "error handling",
+          "configuration"
+        ],
+        "intentPatterns": [
+          "(setup|create|organize).{0,20}(project|structure)",
+          "(design|implement).{0,20}(api|service|endpoint)",
+          "(configure|setup).{0,20}(database|celery|redis)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/app/**/*.py",
+          "backend/app/api/**/*.py",
+          "backend/app/services/**/*.py",
+          "backend/app/models/**/*.py",
+          "backend/app/schemas/**/*.py",
+          "backend/app/config.py",
+          "tests/**/*.py"
+        ],
+        "contentPatterns": [
+          "from fastapi import",
+          "from pydantic import",
+          "@router\\.",
+          "class.*Service",
+          "async def"
+        ]
+      },
+      "description": "Architecture patterns for rRNA-Phylo project including FastAPI backend design, service organization, async task processing with Celery, Pydantic schemas, testing with pytest, Biopython integration, and API design conventions. Covers project structure, dependency injection, error handling, and configuration management."
+    },
+    "ml-integration-patterns": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "machine learning",
+          "ML model",
+          "training",
+          "inference",
+          "sklearn",
+          "PyTorch",
+          "feature engineering",
+          "k-mer",
+          "CNN",
+          "GNN",
+          "transformer",
+          "ensemble",
+          "consensus",
+          "model serving",
+          "hyperparameter",
+          "cross-validation"
+        ],
+        "intentPatterns": [
+          "(train|build|create).{0,20}(model|classifier|network)",
+          "(feature|extract|encode).{0,20}(sequence|data)",
+          "(ensemble|consensus|combine).{0,20}(tree|model)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/app/services/ml/**/*.py",
+          "backend/**/features/**/*.py",
+          "backend/**/models/**/*.py",
+          "backend/**/training/**/*.py",
+          "backend/**/inference/**/*.py"
+        ],
+        "contentPatterns": [
+          "from sklearn",
+          "import torch",
+          "from torch import nn",
+          "class.*Classifier",
+          "class.*Model.*\\(nn\\.Module\\)",
+          "def train",
+          "def predict"
+        ]
+      },
+      "description": "Machine learning integration patterns for rRNA-Phylo covering three use cases - rRNA sequence classification (supervised learning with sklearn/PyTorch), multi-tree consensus (ensemble methods), and generative tree synthesis (GNNs/transformers). Includes feature engineering, model training, hyperparameter tuning, model serving, versioning, and evaluation metrics for bioinformatics ML workflows."
+    }
   }
 }

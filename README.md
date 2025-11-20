@@ -1,41 +1,47 @@
 # rRNA-Phylo
 
-Attempt at rRNA prediction and a whole encompassing phylogenetic tree simulator that combines many methods and shows possible interpretations.
+rRNA prediction and phylogenetic tree builder for prokaryotes and eukaryotes.
 
-## Features
+## Project Goals
 
-### rRNA Prediction
-- Prokaryotic rRNA detection (16S, 23S, 5S)
-- Eukaryotic rRNA detection (18S, 28S, 5.8S, 5S)
-- Support for both trained models and traditional methods
+- **rRNA Detection**: Identify 16S, 18S, 23S, 28S, 5S, and 5.8S rRNA in genomic sequences
+- **Phylogenetic Analysis**: Build trees using multiple methods (distance, ML, Bayesian)
+- **Multi-Tree Consensus**: Combine trees for forensics-grade reliability
+- **ML Integration**: Enhance detection and tree building with machine learning
 
-### Phylogenetic Analysis
-- Multiple tree building methods (Distance, ML, Bayesian)
-- Interactive tree visualization
-- Method comparison and interpretation tools
-- Bootstrap and support value analysis
+## Development Skills
 
-## Project Structure
-```
-rrna-phylo/
-├── backend/        # Python/FastAPI server
-├── frontend/       # React web interface
-├── cli/           # Command-line tools
-├── docs/          # Documentation
-└── tests/         # Test suite
-```
+This project uses Claude Code skills for development guidance:
 
-## Installation
+### Core Skills
 
-Coming soon...
+1. **[rRNA Prediction Patterns](.claude/skills/rrna-prediction-patterns/SKILL.md)**
+   - rRNA detection methods (HMM, BLAST, patterns)
+   - Quality scoring and validation
+   - Length and completeness assessment
 
-## Usage
+2. **[Phylogenetic Methods](.claude/skills/phylogenetic-methods/SKILL.md)**
+   - Distance-based methods (UPGMA, Neighbor-Joining)
+   - Maximum likelihood (RAxML, IQ-TREE)
+   - Bayesian inference (MrBayes)
+   - Tree formats and consensus
 
-Coming soon...
+3. **[Project Architecture Patterns](.claude/skills/project-architecture-patterns/SKILL.md)**
+   - FastAPI backend design
+   - Service layer organization
+   - Testing strategies
+   - API conventions
 
-## Development
+4. **[ML Integration Patterns](.claude/skills/ml-integration-patterns/SKILL.md)**
+   - rRNA classification (supervised learning)
+   - Multi-tree consensus (ensemble methods)
+   - Generative tree synthesis (GNNs/transformers)
 
-This project uses Claude Code infrastructure for development assistance.
+## Getting Started
+
+Ready to start implementing? The skills contain all the patterns and best practices you need.
+
+Simply mention your goal, and the relevant skill will activate to guide you!
 
 ## License
 
