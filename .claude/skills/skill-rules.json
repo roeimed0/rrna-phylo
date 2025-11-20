@@ -1,0 +1,58 @@
+{
+  "skill-developer": {
+    "keywordTriggers": [
+      "create skill",
+      "new skill",
+      "skill for",
+      "add skill",
+      "make a skill"
+    ],
+    "description": "Meta-skill for creating and managing other skills"
+  },
+  "rrna-prediction-patterns": {
+    "keywordTriggers": [
+      "rRNA",
+      "ribosomal",
+      "16S",
+      "18S",
+      "23S",
+      "28S",
+      "5S",
+      "5.8S",
+      "rRNA detection",
+      "rRNA prediction"
+    ],
+    "fileTriggers": {
+      "pathPatterns": [
+        "backend/rrna/**/*.py",
+        "backend/**/rrna*.py",
+        "cli/**/rrna*.py"
+      ]
+    },
+    "description": "Guidelines for rRNA detection and prediction (prokaryotic and eukaryotic)"
+  },
+  "phylogenetic-methods": {
+    "keywordTriggers": [
+      "phylogenetic",
+      "phylogeny",
+      "tree",
+      "neighbor joining",
+      "maximum likelihood",
+      "bayesian",
+      "bootstrap",
+      "cladogram",
+      "phylogram",
+      "newick",
+      "alignment"
+    ],
+    "fileTriggers": {
+      "pathPatterns": [
+        "backend/phylo/**/*.py",
+        "backend/**/tree*.py",
+        "backend/**/phylo*.py",
+        "cli/**/tree*.py"
+      ]
+    },
+    "description": "Guidelines for phylogenetic tree building and analysis methods"
+  }
+}
