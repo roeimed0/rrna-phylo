@@ -17,7 +17,10 @@
       "Bash(for file in tests/*.py rrna_phylo/**/*.py)",
       "Bash(do sed -i 's/✓/[OK]/g; s/→/->/g; s/←/<-/g' \"$file\")",
       "Bash(python3 -c:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(gh pr create:*)",
+      "Bash(timeout 60 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
+      "Bash(timeout 120 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)"
     ],
     "deny": [],
     "ask": []

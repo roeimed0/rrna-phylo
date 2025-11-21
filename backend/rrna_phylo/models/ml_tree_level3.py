@@ -446,3 +446,37 @@ def build_ml_tree_level3(
         print("=" * 60)
 
     return initial_tree, final_logL
+
+
+def compute_log_likelihood(
+    tree: TreeNode,
+    sequences: List[Sequence],
+    alpha: float = None
+) -> float:
+    """
+    Compute log-likelihood of a tree given sequences.
+
+    Helper function for Level 4 model selection and tree search.
+
+    Args:
+        tree: Tree topology with branch lengths
+        sequences: Aligned sequences
+        alpha: Gamma shape parameter (None = uniform rates)
+
+    Returns:
+        Log-likelihood score
+    """
+    # Create GTR model
+    model = GTRModel()
+    model.estimate_parameters(sequences)
+
+    # Create likelihood calculator
+    if alpha is None:
+        alpha = 1.0  # Default gamma shape
+
+    calculator = LikelihoodCalculatorLevel3(model, sequences, alpha=alpha)
+
+    # Calculate log-likelihood (already returns log-likelihood, not probability)
+    log_likelihood = calculator.calculate_likelihood(tree)
+
+    return log_likelihood

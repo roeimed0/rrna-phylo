@@ -301,6 +301,59 @@
         ]
       },
       "description": "Consensus tree methods for combining multiple phylogenetic trees with confidence scoring - includes Robinson-Foulds distance, majority-rule consensus, strict consensus, and bootstrap support calculation"
+    },
+    "ml-tree-level4": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "model selection",
+          "AIC",
+          "BIC",
+          "NNI",
+          "SPR",
+          "TBR",
+          "tree search",
+          "substitution model",
+          "JC69",
+          "K80",
+          "HKY85",
+          "FreeRate",
+          "partition model",
+          "numba",
+          "GPU acceleration",
+          "optimize topology",
+          "nearest neighbor interchange",
+          "subtree pruning",
+          "branch swapping"
+        ],
+        "intentPatterns": [
+          "(select|test|compare).{0,20}model",
+          "(AIC|BIC).{0,20}(selection|criterion)",
+          "(NNI|SPR|TBR).{0,20}search",
+          "(tree|topology).{0,20}(search|optimization)",
+          "(improve|optimize).{0,20}(tree|topology)",
+          "performance.{0,20}(optimization|acceleration)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/**/models/ml_tree_level4*.py",
+          "backend/**/models/model_selection*.py",
+          "backend/**/models/tree_search*.py",
+          "tests/**/test_ml_level4*.py"
+        ],
+        "contentPatterns": [
+          "def.*model_selection",
+          "def.*nni_search",
+          "def.*spr_search",
+          "class.*SubstitutionModel",
+          "@nb\\.jit",
+          "import cupy"
+        ]
+      },
+      "description": "Advanced Maximum Likelihood phylogenetics with model selection (AIC/BIC), tree search algorithms (NNI/SPR/TBR), and performance optimization (Numba/GPU)"
     }
   }
 }

@@ -122,3 +122,106 @@ class TreeNode:
             List of leaf names (sequence IDs)
         """
         return [leaf.name for leaf in self.get_leaves()]
+
+    def copy(self):
+        """
+        Create a deep copy of the tree.
+
+        Returns:
+            New TreeNode with same structure and values
+
+        Example:
+            >>> original = TreeNode("A", distance=0.5)
+            >>> copy = original.copy()
+            >>> copy.distance = 1.0  # Doesn't affect original
+        """
+        if self.is_leaf():
+            return TreeNode(
+                name=self.name,
+                distance=self.distance,
+                support=self.support
+            )
+
+        left_copy = self.left.copy() if self.left else None
+        right_copy = self.right.copy() if self.right else None
+
+        return TreeNode(
+            name=self.name,
+            left=left_copy,
+            right=right_copy,
+            distance=self.distance,
+            support=self.support
+        )
+
+    def find_node(self, name: str):
+        """
+        Find a node by name in the tree.
+
+        Args:
+            name: Node name to search for
+
+        Returns:
+            TreeNode if found, None otherwise
+
+        Example:
+            >>> tree = TreeNode("root", left=TreeNode("A"), right=TreeNode("B"))
+            >>> node = tree.find_node("A")
+            >>> node.name
+            'A'
+        """
+        if self.name == name:
+            return self
+
+        if self.left:
+            result = self.left.find_node(name)
+            if result:
+                return result
+
+        if self.right:
+            result = self.right.find_node(name)
+            if result:
+                return result
+
+        return None
+
+    def get_internal_nodes(self) -> list:
+        """
+        Get all internal (non-leaf) nodes in the tree.
+
+        Returns:
+            List of internal TreeNode objects
+
+        Example:
+            >>> tree = TreeNode(left=TreeNode("A"), right=TreeNode("B"))
+            >>> internals = tree.get_internal_nodes()
+            >>> len(internals)
+            1
+        """
+        if self.is_leaf():
+            return []
+
+        nodes = [self]
+        if self.left:
+            nodes.extend(self.left.get_internal_nodes())
+        if self.right:
+            nodes.extend(self.right.get_internal_nodes())
+
+        return nodes
+
+    def get_all_nodes(self) -> list:
+        """
+        Get all nodes (internal and leaf) in the tree.
+
+        Returns:
+            List of all TreeNode objects
+        """
+        if self.is_leaf():
+            return [self]
+
+        nodes = [self]
+        if self.left:
+            nodes.extend(self.left.get_all_nodes())
+        if self.right:
+            nodes.extend(self.right.get_all_nodes())
+
+        return nodes
