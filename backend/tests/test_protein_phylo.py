@@ -8,7 +8,7 @@ import numpy as np
 from rrna_phylo.io.fasta_parser import Sequence
 from rrna_phylo.distance.protein_distance import ProteinDistanceCalculator, calculate_protein_distance_matrix
 from rrna_phylo.methods.protein_ml import build_protein_ml_tree
-from phylo_builder import build_trees
+from rrna_phylo.core.builder import build_trees
 from rrna_phylo.core.sequence_type import SequenceType
 
 
@@ -53,7 +53,7 @@ def test_protein_distance():
     assert human_chimp == 0.0, "Identical sequences should have distance 0"
     assert human_mouse > 0.0, "Different sequences should have distance > 0"
 
-    print("\n✓ Protein distance test passed!")
+    print("\n[OK] Protein distance test passed!")
 
 
 def test_protein_ml_tree():
@@ -65,7 +65,7 @@ def test_protein_ml_tree():
     sequences = [
         Sequence("seq1", "Protein 1", "MKTAYIAKQRQISFVKSHFSRQ"),
         Sequence("seq2", "Protein 2", "MKTAYIAKQRQISFVKSHFSRQ"),  # Identical
-        Sequence("seq3", "Protein 3", "MKTAYIAKQRQIAFVKSHFSRQ"),  # 1 diff (S→A)
+        Sequence("seq3", "Protein 3", "MKTAYIAKQRQIAFVKSHFSRQ"),  # 1 diff (S->A)
         Sequence("seq4", "Protein 4", "MKTAYIAKQRQIAFVKSHFSRR"),  # 2 diffs
     ]
 
@@ -83,7 +83,7 @@ def test_protein_ml_tree():
     assert tree is not None, "Should return a tree"
     assert logL < 0, "Log-likelihood should be negative"
 
-    print("\n✓ Protein ML tree test passed!")
+    print("\n[OK] Protein ML tree test passed!")
 
 
 def test_unified_builder_proteins():
@@ -119,7 +119,7 @@ def test_unified_builder_proteins():
     print(f"  ML:    {ml_tree.to_newick()}")
     print(f"  ML logL: {logL:.2f}")
 
-    print("\n✓ Unified builder protein test passed!")
+    print("\n[OK] Unified builder protein test passed!")
 
 
 def test_all_three_sequence_types():
@@ -179,7 +179,7 @@ def test_all_three_sequence_types():
     assert rna_results["model"] == "GTR+G"
     assert prot_results["model"] == "WAG"
 
-    print("\n✓ All three sequence types working!")
+    print("\n[OK] All three sequence types working!")
 
 
 def test_protein_models_comparison():
@@ -208,7 +208,7 @@ def test_protein_models_comparison():
         print(f"  Tree: {tree.to_newick()}")
         print(f"  Log-likelihood: {logL:.2f}")
 
-    print("\n✓ Model comparison test passed!")
+    print("\n[OK] Model comparison test passed!")
 
 
 def main():
@@ -217,11 +217,11 @@ def main():
     print("COMPLETE PROTEIN PHYLOGENETICS TESTS")
     print("=" * 70)
     print("\nTesting:")
-    print("  ✓ Protein distance calculation (Poisson, Kimura)")
-    print("  ✓ Protein ML trees (WAG/LG/JTT+Gamma)")
-    print("  ✓ 20x20 likelihood matrices")
-    print("  ✓ Unified builder integration")
-    print("  ✓ All three sequence types (DNA, RNA, Protein)")
+    print("  [OK] Protein distance calculation (Poisson, Kimura)")
+    print("  [OK] Protein ML trees (WAG/LG/JTT+Gamma)")
+    print("  [OK] 20x20 likelihood matrices")
+    print("  [OK] Unified builder integration")
+    print("  [OK] All three sequence types (DNA, RNA, Protein)")
 
     np.random.seed(42)
 
@@ -232,21 +232,21 @@ def main():
     test_protein_models_comparison()
 
     print("\n\n" + "=" * 70)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 70)
     print("\nProtein Phylogenetics Complete!")
     print("\nWhat we achieved:")
-    print("  ✓ Protein distance models (Poisson, Kimura)")
-    print("  ✓ Protein ML inference (WAG, LG, JTT)")
-    print("  ✓ 20x20 probability matrices")
-    print("  ✓ Felsenstein's algorithm for proteins")
-    print("  ✓ Gamma rate heterogeneity")
-    print("  ✓ Site pattern compression")
-    print("  ✓ Full integration with unified builder")
+    print("  [OK] Protein distance models (Poisson, Kimura)")
+    print("  [OK] Protein ML inference (WAG, LG, JTT)")
+    print("  [OK] 20x20 probability matrices")
+    print("  [OK] Felsenstein's algorithm for proteins")
+    print("  [OK] Gamma rate heterogeneity")
+    print("  [OK] Site pattern compression")
+    print("  [OK] Full integration with unified builder")
     print("\nYour rRNA-Phylo system now supports:")
-    print("  ✅ DNA phylogenetics - FULLY WORKING")
-    print("  ✅ RNA phylogenetics - FULLY WORKING (perfect for rRNA!)")
-    print("  ✅ Protein phylogenetics - FULLY WORKING!")
+    print("  [PASS] DNA phylogenetics - FULLY WORKING")
+    print("  [PASS] RNA phylogenetics - FULLY WORKING (perfect for rRNA!)")
+    print("  [PASS] Protein phylogenetics - FULLY WORKING!")
     print("\nGeneral-purpose phylogenetics system complete!")
     print("Works for any homologous sequences (DNA, RNA, or Protein)")
     print("Recommends rRNA for forensic use")

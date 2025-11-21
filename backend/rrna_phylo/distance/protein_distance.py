@@ -236,7 +236,7 @@ if __name__ == "__main__":
     sequences = [
         Sequence("human", "Human cytochrome c", "GDVEKGKKIFIMKCSQCHTVEK"),
         Sequence("chimp", "Chimp cytochrome c", "GDVEKGKKIFIMKCSQCHTVEK"),  # Identical
-        Sequence("mouse", "Mouse cytochrome c", "GDVEKGKKIFVMKCSQCHTVEK"),  # 1 diff (I→V)
+        Sequence("mouse", "Mouse cytochrome c", "GDVEKGKKIFVMKCSQCHTVEK"),  # 1 diff (I->V)
         Sequence("chicken", "Chicken cytochrome c", "GDVAKGKKIFIMKCSQCHTVAK"),  # 2 diffs
     ]
 
@@ -284,8 +284,8 @@ if __name__ == "__main__":
     print("PROTEIN DISTANCE MODELS WORKING!")
     print("=" * 60)
     print("\nComparison of models:")
-    print("  • p-distance: Simple, no correction (underestimates)")
-    print("  • Poisson: Standard correction, assumes equal rates")
-    print("  • Kimura: More conservative, better for moderate divergence")
+    print("  - p-distance: Simple, no correction (underestimates)")
+    print("  - Poisson: Standard correction, assumes equal rates")
+    print("  - Kimura: More conservative, better for moderate divergence")
     print("\nRecommendation: Use Poisson for general protein phylogenetics")
     print("=" * 60)

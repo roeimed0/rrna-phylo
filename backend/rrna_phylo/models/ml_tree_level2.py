@@ -137,7 +137,7 @@ class LikelihoodCalculator:
                 P_left = self.model.probability_matrix(node.left.distance)
                 L_left = conditional_likelihood(node.left)
 
-                # L[parent_state] *= Σ P(parent→child) * L[child_state]
+                # L[parent_state] *= Σ P(parent->child) * L[child_state]
                 left_contrib = np.zeros(4)
                 for parent_state in range(4):
                     for child_state in range(4):
@@ -389,7 +389,7 @@ class MLTreeBuilder:
         if verbose:
             print("\nStep 2: Building initial tree (BioNJ)...")
 
-        from bionj import build_bionj_tree
+        from rrna_phylo.methods.bionj import build_bionj_tree
         from rrna_phylo.distance.distance import calculate_distance_matrix
 
         dist_matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")

@@ -32,10 +32,10 @@ def test_gamma_rates():
         print()
 
     print("Observations:")
-    print("  • Small alpha → high variation (some sites very slow/fast)")
-    print("  • Large alpha → low variation (all sites similar)")
-    print("  • Alpha ≈ 1.0 is typical for real data")
-    print("\n✓ Gamma rates test passed!")
+    print("  - Small alpha -> high variation (some sites very slow/fast)")
+    print("  - Large alpha -> low variation (all sites similar)")
+    print("  - Alpha ~= 1.0 is typical for real data")
+    print("\n[OK] Gamma rates test passed!")
 
 
 def test_pattern_compression():
@@ -68,7 +68,7 @@ def test_pattern_compression():
         count = compressor.pattern_counts[i]
         print(f"  Pattern {i+1}: {pattern} (occurs {count} times)")
 
-    print("\n✓ Pattern compression test passed!")
+    print("\n[OK] Pattern compression test passed!")
 
 
 def test_level2_vs_level3():
@@ -118,11 +118,11 @@ def test_level2_vs_level3():
     print(f"Level 3 (GTR+Gamma): logL = {logL3:.2f}, time = {time3:.2f}s")
     print(f"\nLikelihood improvement: {logL3 - logL2:.2f}")
     print("\nLevel 3 advantages:")
-    print("  ✓ GTR+Gamma model (more realistic)")
-    print("  ✓ Site pattern compression (faster for long alignments)")
-    print("  ✓ Better likelihood (accounts for rate variation)")
+    print("  [OK] GTR+Gamma model (more realistic)")
+    print("  [OK] Site pattern compression (faster for long alignments)")
+    print("  [OK] Better likelihood (accounts for rate variation)")
 
-    print("\n✓ Comparison test passed!")
+    print("\n[OK] Comparison test passed!")
 
 
 def main():
@@ -131,9 +131,9 @@ def main():
     print("MAXIMUM LIKELIHOOD LEVEL 3 TESTS")
     print("=" * 60)
     print("\nTesting GTR+Gamma with site pattern compression:")
-    print("  ✓ Gamma rate distribution")
-    print("  ✓ Site pattern compression")
-    print("  ✓ Complete GTR+Gamma pipeline")
+    print("  [OK] Gamma rate distribution")
+    print("  [OK] Site pattern compression")
+    print("  [OK] Complete GTR+Gamma pipeline")
 
     np.random.seed(42)  # For reproducibility
 
@@ -142,14 +142,14 @@ def main():
     test_level2_vs_level3()
 
     print("\n\n" + "=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 60)
     print("\nLevel 3 Complete!")
     print("\nWhat we achieved:")
-    print("  ✓ GTR+Gamma model (rate heterogeneity)")
-    print("  ✓ Site pattern compression (10x-100x speedup)")
-    print("  ✓ More accurate likelihood")
-    print("  ✓ ~1000 lines of sophisticated ML code")
+    print("  [OK] GTR+Gamma model (rate heterogeneity)")
+    print("  [OK] Site pattern compression (10x-100x speedup)")
+    print("  [OK] More accurate likelihood")
+    print("  [OK] ~1000 lines of sophisticated ML code")
     print("\nThis is now competitive with RAxML for basic analyses!")
     print("\nNext: Level 4 (production features: bootstrap, invariant sites)")
     print()

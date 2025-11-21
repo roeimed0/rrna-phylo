@@ -45,7 +45,7 @@ def test_simple_tree():
     assert not tree.is_leaf(), "Root should be internal node"
     assert tree.left is not None and tree.right is not None
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_four_sequences():
@@ -86,19 +86,19 @@ def test_four_sequences():
     newick = tree.to_newick() + ";"
     print(newick)
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_with_aligned_sequences():
-    """Test complete pipeline: sequences → alignment → distance → UPGMA."""
+    """Test complete pipeline: sequences -> alignment -> distance -> UPGMA."""
     print("\n" + "=" * 60)
-    print("TEST: Complete Pipeline (Sequences → UPGMA)")
+    print("TEST: Complete Pipeline (Sequences -> UPGMA)")
     print("=" * 60)
 
     # We'll simulate this with pre-calculated distances
-    # In real use: parse FASTA → align with MUSCLE → calculate distances → build tree
+    # In real use: parse FASTA -> align with MUSCLE -> calculate distances -> build tree
 
-    from fasta_parser import Sequence
+    from rrna_phylo.io.fasta_parser import Sequence
     from rrna_phylo.distance.distance import calculate_distance_matrix
 
     # Create aligned sequences
@@ -140,7 +140,7 @@ def test_with_aligned_sequences():
     newick = tree.to_newick() + ";"
     print(newick)
 
-    print("\n✓ Complete pipeline test passed!")
+    print("\n[OK] Complete pipeline test passed!")
 
 
 def main():
@@ -154,7 +154,7 @@ def main():
     test_with_aligned_sequences()
 
     print("\n" + "=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 60)
     print()
 

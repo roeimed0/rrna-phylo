@@ -47,7 +47,7 @@ def test_parser():
     parser = FastaParser()
     sequences = parser.parse(test_file)
 
-    print(f"\n✓ Parsed {len(sequences)} sequences")
+    print(f"\n[OK] Parsed {len(sequences)} sequences")
 
     for i, seq in enumerate(sequences, 1):
         print(f"\n  Sequence {i}:")
@@ -61,7 +61,7 @@ def test_parser():
     assert len(sequences) == 4
 
     os.remove(test_file)
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_validation_unaligned():
@@ -88,7 +88,7 @@ def test_validation_unaligned():
     assert validation["needs_alignment"] is True
 
     os.remove(test_file)
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_validation_aligned():
@@ -115,7 +115,7 @@ def test_validation_aligned():
     assert validation["needs_alignment"] is False
 
     os.remove(test_file)
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_sequence_properties():
@@ -141,7 +141,7 @@ def test_sequence_properties():
     assert seq.is_nucleotide() is True
     assert seq.is_protein() is False
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def main():
@@ -156,7 +156,7 @@ def main():
     test_sequence_properties()
 
     print("\n" + "=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 60)
     print()
 

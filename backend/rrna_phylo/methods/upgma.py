@@ -124,9 +124,9 @@ class UPGMABuilder:
         prefix = "  " * indent
 
         if node.is_leaf():
-            print(f"{prefix}└─ {node.name} ({node.distance:.4f})")
+            print(f"{prefix}`- {node.name} ({node.distance:.4f})")
         else:
-            print(f"{prefix}└─ Internal ({node.distance:.4f})")
+            print(f"{prefix}`- Internal ({node.distance:.4f})")
             if node.left:
                 self.print_tree(node.left, indent + 1)
             if node.right:

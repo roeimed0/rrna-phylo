@@ -29,31 +29,40 @@ For more details, see the documentation and examples.
 __version__ = "0.1.0"
 __author__ = "rRNA-Phylo Contributors"
 
-# Core exports - only import what exists during refactoring
-# TEMPORARY: Minimal imports during refactoring
-try:
-    from rrna_phylo.core.tree import TreeNode
-except ImportError:
-    pass
+# Core API exports
+from rrna_phylo.core.tree import TreeNode
+from rrna_phylo.core.sequence_type import SequenceType, SequenceTypeDetector
+from rrna_phylo.core.builder import PhylogeneticTreeBuilder, build_trees
+from rrna_phylo.io.fasta_parser import Sequence, FastaParser
 
-try:
-    from rrna_phylo.core.sequence_type import SequenceType, SequenceTypeDetector
-except ImportError:
-    pass
+# Method exports
+from rrna_phylo.methods import build_upgma_tree, build_bionj_tree, build_protein_ml_tree
 
-try:
-    from rrna_phylo.io.fasta_parser import Sequence, FastaParser
-except ImportError:
-    pass
+# Model exports
+from rrna_phylo.models import build_ml_tree_level3
 
-# NOTE: More imports will be added as refactoring progresses
-# from rrna_phylo.core.builder import PhylogeneticTreeBuilder, build_trees
+# Distance calculation exports
+from rrna_phylo.distance import calculate_distance_matrix, calculate_protein_distance_matrix
 
 __all__ = [
+    # Core classes
     "TreeNode",
     "SequenceType",
     "SequenceTypeDetector",
+    "PhylogeneticTreeBuilder",
+    # Main API functions
+    "build_trees",
+    # IO classes
     "Sequence",
     "FastaParser",
+    # Tree building methods
+    "build_upgma_tree",
+    "build_bionj_tree",
+    "build_protein_ml_tree",
+    "build_ml_tree_level3",
+    # Distance calculations
+    "calculate_distance_matrix",
+    "calculate_protein_distance_matrix",
+    # Version
     "__version__",
 ]

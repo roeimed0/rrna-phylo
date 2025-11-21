@@ -24,7 +24,7 @@ def print_tree_ascii(node, prefix="", is_tail=True, file=None):
         file = sys.stdout
 
     # Print current node
-    connector = "└── " if is_tail else "├── "
+    connector = "`-- " if is_tail else "|-- "
 
     if node.is_leaf():
         print(f"{prefix}{connector}{node.name} (dist: {node.distance:.4f})", file=file)
@@ -34,7 +34,7 @@ def print_tree_ascii(node, prefix="", is_tail=True, file=None):
         # Recurse to children
         if node.left or node.right:
             # Prepare prefix for children
-            extension = "    " if is_tail else "│   "
+            extension = "    " if is_tail else "|   "
             new_prefix = prefix + extension
 
             if node.left and node.right:
@@ -119,13 +119,13 @@ def visualize_all_trees():
     print("SUMMARY")
     print("=" * 80)
     print("\nAll three methods cluster the sequences, but with different:")
-    print("  • Branch lengths (evolutionary distances)")
-    print("  • Topologies (which species group together)")
-    print("  • Assumptions (molecular clock, rate variation, etc.)")
+    print("  - Branch lengths (evolutionary distances)")
+    print("  - Topologies (which species group together)")
+    print("  - Assumptions (molecular clock, rate variation, etc.)")
     print("\nFor forensics/publication:")
-    print("  ✓ Use multiple methods (we have 3!)")
-    print("  ✓ Compare results (next: consensus tree)")
-    print("  ✓ Report all trees + consensus")
+    print("  [OK] Use multiple methods (we have 3!)")
+    print("  [OK] Compare results (next: consensus tree)")
+    print("  [OK] Report all trees + consensus")
     print()
 
 
@@ -161,7 +161,7 @@ def visualize_simple_example():
     print("\nNewick:")
     print(f"{tree.to_newick()};")
 
-    print("\n✓ As expected: A and B cluster together!")
+    print("\n[OK] As expected: A and B cluster together!")
 
 
 if __name__ == "__main__":

@@ -155,7 +155,7 @@ class SequenceTypeDetector:
             )
         elif seq_type == SequenceType.RNA:
             recommendation = (
-                "RNA sequences detected. Will use GTR+Gamma model (U→T mapping).\n"
+                "RNA sequences detected. Will use GTR+Gamma model (U->T mapping).\n"
                 "Perfect for rRNA phylogenetics (16S, 23S, 18S, etc.)."
             )
         elif seq_type == SequenceType.PROTEIN:
@@ -181,7 +181,7 @@ def get_appropriate_model(seq_type: SequenceType) -> str:
     """
     model_map = {
         SequenceType.DNA: "GTR+G",
-        SequenceType.RNA: "GTR+G",  # Same as DNA, U→T internally
+        SequenceType.RNA: "GTR+G",  # Same as DNA, U->T internally
         SequenceType.PROTEIN: "WAG",  # Default protein model
     }
 
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     for seq in test_sequences:
         seq_type = detector.detect_single(seq)
-        print(f"{seq.id:15} {seq.sequence[:20]:20} → {seq_type.value}")
+        print(f"{seq.id:15} {seq.sequence[:20]:20} -> {seq_type.value}")
 
     print("\nTesting alignment validation:")
     print("-" * 60)

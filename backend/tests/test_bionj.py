@@ -42,7 +42,7 @@ def test_simple_bionj():
     print(newick)
 
     assert not tree.is_leaf(), "Root should be internal node"
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_bionj_vs_upgma():
@@ -89,16 +89,16 @@ def test_bionj_vs_upgma():
     print(f"UPGMA:  {upgma_tree.to_newick()};")
     print(f"BioNJ:  {bionj_tree.to_newick()};")
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_complete_pipeline():
-    """Test complete pipeline: sequences → alignment → distance → BioNJ."""
+    """Test complete pipeline: sequences -> alignment -> distance -> BioNJ."""
     print("\n" + "=" * 60)
-    print("TEST: Complete Pipeline (Sequences → BioNJ)")
+    print("TEST: Complete Pipeline (Sequences -> BioNJ)")
     print("=" * 60)
 
-    from fasta_parser import Sequence
+    from rrna_phylo.io.fasta_parser import Sequence
     from rrna_phylo.distance.distance import calculate_distance_matrix
 
     # Create aligned sequences
@@ -140,7 +140,7 @@ def test_complete_pipeline():
     newick = tree.to_newick() + ";"
     print(newick)
 
-    print("\n✓ Complete pipeline test passed!")
+    print("\n[OK] Complete pipeline test passed!")
 
 
 def test_variance_weighting():
@@ -173,7 +173,7 @@ def test_variance_weighting():
     print("\nNewick:")
     print(tree.to_newick() + ";")
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def main():
@@ -188,7 +188,7 @@ def main():
     test_variance_weighting()
 
     print("\n" + "=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 60)
     print("\nBioNJ is ready! It's the best distance-based method.")
     print("Next: Integrate with ML methods (RAxML) for even better trees!")

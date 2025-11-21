@@ -11,7 +11,13 @@
       "Bash(C:/Users/User/anaconda3/Scripts/conda.exe run -n gene_prediction python -c \"from phylo_builder import build_trees; print(''phylo_builder imports working!'')\")",
       "Bash(C:/Users/User/anaconda3/Scripts/conda.exe run:*)",
       "Bash(C:/Users/User/anaconda3/envs/gene_prediction/python.exe -c \"from phylo_builder import build_trees; from rrna_phylo.models import build_ml_tree_level3; print(''Model imports working!'')\")",
-      "Bash(C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)"
+      "Bash(C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
+      "Bash(for file in rrna_phylo/methods/upgma.py rrna_phylo/methods/bionj.py rrna_phylo/utils/visualize_trees.py)",
+      "Bash(do sed -i 's/└─/`-/g; s/├─/|-/g; s/│/|/g; s/─/-/g' \"$file\")",
+      "Bash(for file in tests/*.py rrna_phylo/**/*.py)",
+      "Bash(do sed -i 's/✓/[OK]/g; s/→/->/g; s/←/<-/g' \"$file\")",
+      "Bash(python3 -c:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

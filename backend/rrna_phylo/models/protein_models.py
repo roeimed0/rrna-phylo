@@ -71,7 +71,7 @@ class ProteinModel:
         Build rate matrix Q from exchangeability matrix S and frequencies.
 
         For proteins:
-        Q[i,j] = S[i,j] * freq[j]  (for i ≠ j)
+        Q[i,j] = S[i,j] * freq[j]  (for i != j)
         Q[i,i] = -sum(Q[i,:])
 
         Then normalize so average rate = 1.

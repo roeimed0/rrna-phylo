@@ -26,10 +26,10 @@ ATGATGCATGCATGCATG
 
 
 def get_muscle_path():
-    """Return path to local muscle.exe if exists, else fallback to system PATH."""
+    """Return path to local muscle.exe if exists, else None to use default."""
     if os.path.exists(LOCAL_MUSCLE):
         return LOCAL_MUSCLE
-    return "muscle"
+    return None  # Let MuscleAligner use its default path
 
 
 def test_muscle_installation():
@@ -61,7 +61,7 @@ def test_alignment():
         aligner = MuscleAligner(muscle_executable=get_muscle_path())
         aligned_sequences = aligner.align(input_file, output_file)
 
-        print("\n✓ Alignment completed")
+        print("\n[OK] Alignment completed")
         for s in aligned_sequences:
             print(f"  {s.id}: {s.aligned_length} bp aligned")
 
@@ -99,7 +99,7 @@ def test_align_sequence_objects():
         aligner = MuscleAligner(muscle_executable=get_muscle_path())
         aligned_sequences = aligner.align_sequences(sequences, output_file)
 
-        print(f"\n✓ Aligned {len(aligned_sequences)} sequences")
+        print(f"\n[OK] Aligned {len(aligned_sequences)} sequences")
         for seq in aligned_sequences:
             print(f"  {seq.id}: aligned length = {seq.aligned_length}")
 
@@ -124,7 +124,7 @@ def main():
     test_align_sequence_objects()
 
     print("\n" + "=" * 60)
-    print("ALL TESTS COMPLETE ✓")
+    print("ALL TESTS COMPLETE [OK]")
     print("=" * 60)
 
 

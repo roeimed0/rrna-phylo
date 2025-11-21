@@ -227,7 +227,7 @@ class ProteinPatternCompressor:
         self.n_patterns = len(patterns_dict)
 
         compression_ratio = seq_len / self.n_patterns
-        print(f"Site pattern compression: {seq_len} sites → {self.n_patterns} patterns "
+        print(f"Site pattern compression: {seq_len} sites -> {self.n_patterns} patterns "
               f"({compression_ratio:.1f}x speedup)")
 
 
@@ -360,7 +360,7 @@ def build_protein_ml_tree(
         print("\nStep 2: Building initial tree (BioNJ with Poisson distance)...")
 
     from rrna_phylo.distance.protein_distance import calculate_protein_distance_matrix
-    from bionj import build_bionj_tree
+    from rrna_phylo.methods.bionj import build_bionj_tree
 
     dist_matrix, ids = calculate_protein_distance_matrix(sequences, model="poisson")
     initial_tree = build_bionj_tree(dist_matrix, ids)
@@ -401,7 +401,7 @@ if __name__ == "__main__":
     sequences = [
         Sequence("seq1", "Protein 1", "MKTAYIAKQRQISFVK"),
         Sequence("seq2", "Protein 2", "MKTAYIAKQRQISFVK"),  # Identical
-        Sequence("seq3", "Protein 3", "MKTAYIAKQRQIAFVK"),  # 1 diff (S→A)
+        Sequence("seq3", "Protein 3", "MKTAYIAKQRQIAFVK"),  # 1 diff (S->A)
         Sequence("seq4", "Protein 4", "MKTAYIAKQRQIAFVR"),  # 2 diffs
     ]
 
@@ -420,10 +420,10 @@ if __name__ == "__main__":
     print("PROTEIN ML TREES WORKING!")
     print("=" * 60)
     print("\nWhat we achieved:")
-    print("  ✓ 20x20 probability matrices")
-    print("  ✓ Felsenstein's algorithm for proteins")
-    print("  ✓ WAG/LG/JTT empirical models")
-    print("  ✓ Gamma rate heterogeneity")
-    print("  ✓ Site pattern compression")
+    print("  [OK] 20x20 probability matrices")
+    print("  [OK] Felsenstein's algorithm for proteins")
+    print("  [OK] WAG/LG/JTT empirical models")
+    print("  [OK] Gamma rate heterogeneity")
+    print("  [OK] Site pattern compression")
     print("\nProtein phylogenetics now fully supported!")
     print("=" * 60)

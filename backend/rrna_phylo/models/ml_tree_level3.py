@@ -39,9 +39,9 @@ class GammaRates:
 
     Parameters:
     - alpha (shape parameter): Controls variation
-      * alpha → 0: high variation (some sites very slow, some very fast)
-      * alpha → ∞: low variation (all sites similar rate)
-      * alpha ≈ 1: moderate variation (typical for real data)
+      * alpha -> 0: high variation (some sites very slow, some very fast)
+      * alpha -> ∞: low variation (all sites similar rate)
+      * alpha ~= 1: moderate variation (typical for real data)
 
     - n_categories: Usually 4 or 8
       * Discrete approximation to continuous gamma
@@ -170,7 +170,7 @@ class SitePatternCompressor:
     Speedup:
     ========
     Real alignments: 10x-100x faster!
-    - 1000 sites → often ~100-200 unique patterns
+    - 1000 sites -> often ~100-200 unique patterns
     """
 
     def __init__(self, sequences: List[Sequence]):
@@ -191,7 +191,7 @@ class SitePatternCompressor:
         n_seq = len(self.sequences)
         seq_len = self.sequences[0].aligned_length
 
-        # Convert sequences to array (RNA U → T)
+        # Convert sequences to array (RNA U -> T)
         alignment = np.zeros((n_seq, seq_len), dtype=int)
         nuc_to_idx = {'A': 0, 'C': 1, 'G': 2, 'T': 3, 'U': 3}  # RNA support
 
@@ -219,7 +219,7 @@ class SitePatternCompressor:
         self.n_patterns = len(patterns_dict)
 
         compression_ratio = seq_len / self.n_patterns
-        print(f"Site pattern compression: {seq_len} sites → {self.n_patterns} patterns "
+        print(f"Site pattern compression: {seq_len} sites -> {self.n_patterns} patterns "
               f"({compression_ratio:.1f}x speedup)")
 
 
@@ -426,7 +426,7 @@ def build_ml_tree_level3(
     if verbose:
         print("\nStep 4: Optimizing branch lengths...")
 
-    from ml_tree_level2 import BranchLengthOptimizer
+    from rrna_phylo.models.ml_tree_level2 import BranchLengthOptimizer
 
     # Wrap calculator to match Level 2 interface
     class CalculatorWrapper:

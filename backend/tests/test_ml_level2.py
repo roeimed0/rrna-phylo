@@ -56,7 +56,7 @@ def test_likelihood_calculation():
 
     print(f"\nLog-likelihood: {log_likelihood:.2f}")
     print("(More negative = less likely)")
-    print("\n✓ Likelihood calculation test passed!")
+    print("\n[OK] Likelihood calculation test passed!")
 
     return calculator, tree
 
@@ -81,7 +81,7 @@ def test_branch_optimization(calculator, tree):
 
     assert final_logL >= initial_logL, "Optimization should not decrease likelihood!"
 
-    print("\n✓ Branch optimization test passed!")
+    print("\n[OK] Branch optimization test passed!")
 
 
 def test_complete_ml_pipeline():
@@ -110,7 +110,7 @@ def test_complete_ml_pipeline():
 
     print(f"\nFinal log-likelihood: {log_likelihood:.2f}")
 
-    print("\n✓ Complete ML pipeline test passed!")
+    print("\n[OK] Complete ML pipeline test passed!")
 
 
 def test_likelihood_properties():
@@ -168,7 +168,7 @@ def test_likelihood_properties():
     assert log_likelihood > log_likelihood2, \
         "Identical sequences should have higher likelihood!"
 
-    print("\n✓ Likelihood properties test passed!")
+    print("\n[OK] Likelihood properties test passed!")
 
 
 def main():
@@ -177,10 +177,10 @@ def main():
     print("MAXIMUM LIKELIHOOD LEVEL 2 TESTS")
     print("=" * 60)
     print("\nTesting complete ML implementation with:")
-    print("  ✓ Felsenstein's Pruning Algorithm")
-    print("  ✓ Branch length optimization (Brent's method)")
-    print("  ✓ NNI tree search")
-    print("  ✓ Complete pipeline")
+    print("  [OK] Felsenstein's Pruning Algorithm")
+    print("  [OK] Branch length optimization (Brent's method)")
+    print("  [OK] NNI tree search")
+    print("  [OK] Complete pipeline")
 
     # Test 1: Likelihood calculation
     calculator, tree = test_likelihood_calculation()
@@ -195,14 +195,14 @@ def main():
     test_likelihood_properties()
 
     print("\n\n" + "=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 60)
     print("\nLevel 2 ML Implementation Complete!")
     print("\nWhat we achieved:")
-    print("  ✓ Real likelihood calculation (not placeholder)")
-    print("  ✓ Branch length optimization (finds best lengths)")
-    print("  ✓ Tree search capability (NNI framework)")
-    print("  ✓ ~500 lines of working ML code")
+    print("  [OK] Real likelihood calculation (not placeholder)")
+    print("  [OK] Branch length optimization (finds best lengths)")
+    print("  [OK] Tree search capability (NNI framework)")
+    print("  [OK] ~500 lines of working ML code")
     print("\nThis is now competitive with basic ML implementations!")
     print("\nNext: Level 3 (GTR+Gamma, SPR search, pattern compression)")
     print()

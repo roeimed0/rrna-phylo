@@ -9,7 +9,8 @@ class MuscleAligner:
 
     def __init__(self, muscle_executable: Optional[str] = None):
         # Default to project root muscle.exe
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        # __file__ is in rrna_phylo/io/, so go up 3 levels: io -> rrna_phylo -> backend -> project_root
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
         default_path = os.path.join(project_root, "muscle.exe")
         self.muscle_executable = muscle_executable or default_path
 

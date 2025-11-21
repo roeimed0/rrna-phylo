@@ -38,7 +38,7 @@ def test_sequence_type_detection():
     print(f"Detected as: {prot_type.value}")
     assert prot_type == SequenceType.PROTEIN, "Should detect as protein"
 
-    print("\n✓ Type detection test passed!")
+    print("\n[OK] Type detection test passed!")
 
 
 def test_rna_in_gtr_model():
@@ -73,7 +73,7 @@ def test_rna_in_gtr_model():
     assert 'U' in model.nuc_to_idx, "Model should have U mapping"
     assert model.nuc_to_idx['U'] == 3, "U should map to index 3 (same as T)"
 
-    print("\n✓ RNA GTR model test passed!")
+    print("\n[OK] RNA GTR model test passed!")
 
 
 def test_dna_vs_rna_equivalence():
@@ -89,7 +89,7 @@ def test_dna_vs_rna_equivalence():
         Sequence("seq3", "DNA", "ATCCAA"),
     ]
 
-    # Same sequences, RNA version (T → U)
+    # Same sequences, RNA version (T -> U)
     rna_sequences = [
         Sequence("seq1", "RNA", "AUGCAU"),
         Sequence("seq2", "RNA", "AUGCAC"),
@@ -121,7 +121,7 @@ def test_dna_vs_rna_equivalence():
     assert np.allclose(dna_model.base_freq, rna_model.base_freq), \
         "DNA and RNA should have same base frequencies"
 
-    print("\n✓ DNA/RNA equivalence test passed!")
+    print("\n[OK] DNA/RNA equivalence test passed!")
 
 
 def test_rna_ml_tree():
@@ -163,7 +163,7 @@ def test_rna_ml_tree():
     assert logL < 0, "Log-likelihood should be negative"
     assert tree is not None, "Should return a tree"
 
-    print("\n✓ RNA ML tree test passed!")
+    print("\n[OK] RNA ML tree test passed!")
 
 
 def test_mixed_sequences_error():
@@ -190,7 +190,7 @@ def test_mixed_sequences_error():
         print("Note: T and U both present might be treated as DNA")
     except ValueError as e:
         print(f"\nCaught expected error: {e}")
-        print("✓ Mixed sequence detection working!")
+        print("[OK] Mixed sequence detection working!")
 
 
 def main():
@@ -199,11 +199,11 @@ def main():
     print("SEQUENCE TYPE & RNA SUPPORT TESTS")
     print("=" * 60)
     print("\nTesting:")
-    print("  ✓ Automatic sequence type detection")
-    print("  ✓ RNA support in GTR model")
-    print("  ✓ DNA vs RNA equivalence")
-    print("  ✓ RNA in ML tree building")
-    print("  ✓ Mixed sequence error handling")
+    print("  [OK] Automatic sequence type detection")
+    print("  [OK] RNA support in GTR model")
+    print("  [OK] DNA vs RNA equivalence")
+    print("  [OK] RNA in ML tree building")
+    print("  [OK] Mixed sequence error handling")
 
     np.random.seed(42)  # For reproducibility
 
@@ -214,19 +214,19 @@ def main():
     test_mixed_sequences_error()
 
     print("\n\n" + "=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 60)
     print("\nRNA Support Complete!")
     print("\nWhat we achieved:")
-    print("  ✓ Automatic DNA/RNA/Protein detection")
-    print("  ✓ RNA sequences (U) work in all methods")
-    print("  ✓ DNA and RNA produce equivalent results")
-    print("  ✓ Perfect for rRNA phylogenetics!")
+    print("  [OK] Automatic DNA/RNA/Protein detection")
+    print("  [OK] RNA sequences (U) work in all methods")
+    print("  [OK] DNA and RNA produce equivalent results")
+    print("  [OK] Perfect for rRNA phylogenetics!")
     print("\nYour rRNA-Phylo project now supports:")
-    print("  • DNA sequences (ACGT)")
-    print("  • RNA sequences (ACGU) - perfect for 16S/23S rRNA!")
-    print("  • Automatic type detection")
-    print("  • Three tree methods: UPGMA, BioNJ, ML (GTR+Gamma)")
+    print("  - DNA sequences (ACGT)")
+    print("  - RNA sequences (ACGU) - perfect for 16S/23S rRNA!")
+    print("  - Automatic type detection")
+    print("  - Three tree methods: UPGMA, BioNJ, ML (GTR+Gamma)")
     print()
 
 

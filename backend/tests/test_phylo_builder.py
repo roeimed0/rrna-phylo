@@ -6,7 +6,7 @@ Tests automatic model selection for DNA, RNA, and Protein sequences.
 
 import numpy as np
 from rrna_phylo.io.fasta_parser import Sequence
-from phylo_builder import PhylogeneticTreeBuilder, build_trees
+from rrna_phylo.core.builder import PhylogeneticTreeBuilder, build_trees
 from rrna_phylo.core.sequence_type import SequenceType
 
 
@@ -28,7 +28,7 @@ def test_dna_automatic_detection():
     assert seq_type == SequenceType.DNA, "Should detect as DNA"
     assert builder.model_name == "GTR+G", "Should use GTR+G for DNA"
 
-    print("\n✓ DNA detection test passed!")
+    print("\n[OK] DNA detection test passed!")
 
 
 def test_rna_automatic_detection():
@@ -49,7 +49,7 @@ def test_rna_automatic_detection():
     assert seq_type == SequenceType.RNA, "Should detect as RNA"
     assert builder.model_name == "GTR+G", "Should use GTR+G for RNA"
 
-    print("\n✓ RNA detection test passed!")
+    print("\n[OK] RNA detection test passed!")
 
 
 def test_build_all_trees_dna():
@@ -81,7 +81,7 @@ def test_build_all_trees_dna():
     print(f"  ML: {ml.to_newick()};")
     print(f"  ML log-likelihood: {logL:.2f}")
 
-    print("\n✓ Build all trees (DNA) test passed!")
+    print("\n[OK] Build all trees (DNA) test passed!")
 
 
 def test_build_all_trees_rna():
@@ -107,7 +107,7 @@ def test_build_all_trees_rna():
     assert ml is not None
     assert logL < 0
 
-    print("\n✓ Build all trees (RNA) test passed!")
+    print("\n[OK] Build all trees (RNA) test passed!")
 
 
 def test_convenient_function():
@@ -147,7 +147,7 @@ def test_convenient_function():
     print(f"ML tree: {ml_tree.to_newick()};")
     print(f"Log-likelihood: {logL:.2f}")
 
-    print("\n✓ Convenient function test passed!")
+    print("\n[OK] Convenient function test passed!")
 
 
 def test_protein_detection():
@@ -172,9 +172,9 @@ def test_protein_detection():
     upgma = builder.build_upgma_tree(protein_seqs)
     print(f"UPGMA tree built successfully: {upgma.to_newick()};")
     assert upgma is not None, "Should build protein UPGMA tree"
-    print("✓ Correctly built protein UPGMA tree")
+    print("[OK] Correctly built protein UPGMA tree")
 
-    print("\n✓ Protein detection test passed!")
+    print("\n[OK] Protein detection test passed!")
 
 
 def test_mixed_sequence_error():
@@ -197,7 +197,7 @@ def test_mixed_sequence_error():
     except ValueError as e:
         print(f"Caught expected error: {e}")
 
-    print("\n✓ Mixed sequence test completed!")
+    print("\n[OK] Mixed sequence test completed!")
 
 
 def test_forensic_workflow():
@@ -234,16 +234,16 @@ def test_forensic_workflow():
 
     print("\n\nForensic Reliability Assessment:")
     print("-" * 70)
-    print("✓ All three methods completed successfully")
-    print("✓ Same sequence type detected (RNA)")
-    print("✓ Same model used (GTR+Gamma)")
-    print("✓ Trees can be compared for consensus")
+    print("[OK] All three methods completed successfully")
+    print("[OK] Same sequence type detected (RNA)")
+    print("[OK] Same model used (GTR+Gamma)")
+    print("[OK] Trees can be compared for consensus")
     print("\nRecommendation:")
-    print("  • Build consensus tree from all three methods")
-    print("  • Report all topologies in publication/report")
-    print("  • If all agree → high confidence for forensic use")
+    print("  - Build consensus tree from all three methods")
+    print("  - Report all topologies in publication/report")
+    print("  - If all agree -> high confidence for forensic use")
 
-    print("\n✓ Forensic workflow test passed!")
+    print("\n[OK] Forensic workflow test passed!")
 
 
 def main():
@@ -252,11 +252,11 @@ def main():
     print("UNIFIED PHYLOGENETIC TREE BUILDER TESTS")
     print("=" * 70)
     print("\nTesting:")
-    print("  ✓ Automatic sequence type detection")
-    print("  ✓ Model selection (DNA, RNA, Protein)")
-    print("  ✓ Tree building with all three methods")
-    print("  ✓ Convenient interface")
-    print("  ✓ Forensic workflow")
+    print("  [OK] Automatic sequence type detection")
+    print("  [OK] Model selection (DNA, RNA, Protein)")
+    print("  [OK] Tree building with all three methods")
+    print("  [OK] Convenient interface")
+    print("  [OK] Forensic workflow")
 
     np.random.seed(42)
 
@@ -270,20 +270,20 @@ def main():
     test_forensic_workflow()
 
     print("\n\n" + "=" * 70)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 70)
     print("\nUnified Tree Builder Complete!")
     print("\nWhat we achieved:")
-    print("  ✓ Automatic sequence type detection (DNA/RNA/Protein)")
-    print("  ✓ Automatic model selection (GTR+G for DNA/RNA, WAG for Protein)")
-    print("  ✓ Three tree-building methods (UPGMA, BioNJ, ML)")
-    print("  ✓ Single convenient interface: build_trees(sequences)")
-    print("  ✓ Works for any homologous sequences")
-    print("  ✓ Perfect for forensic multi-method validation")
+    print("  [OK] Automatic sequence type detection (DNA/RNA/Protein)")
+    print("  [OK] Automatic model selection (GTR+G for DNA/RNA, WAG for Protein)")
+    print("  [OK] Three tree-building methods (UPGMA, BioNJ, ML)")
+    print("  [OK] Single convenient interface: build_trees(sequences)")
+    print("  [OK] Works for any homologous sequences")
+    print("  [OK] Perfect for forensic multi-method validation")
     print("\nProject Status:")
-    print("  ✅ DNA phylogenetics - FULLY WORKING")
-    print("  ✅ RNA phylogenetics - FULLY WORKING (perfect for rRNA!)")
-    print("  ⏳ Protein phylogenetics - DETECTION ONLY (models defined, trees TODO)")
+    print("  [PASS] DNA phylogenetics - FULLY WORKING")
+    print("  [PASS] RNA phylogenetics - FULLY WORKING (perfect for rRNA!)")
+    print("  [TODO] Protein phylogenetics - DETECTION ONLY (models defined, trees TODO)")
     print("\nYour rRNA-Phylo system is now a general-purpose phylogenetics tool!")
     print("Works for DNA, RNA, and (soon) Protein sequences.")
     print("Recommends rRNA for forensic use, but handles any homologous sequences.")

@@ -62,7 +62,7 @@ class GTRModel:
     To get probabilities after time t, we use:
         P(t) = e^(Qt) (matrix exponential)
 
-    This gives us P(i→j in time t) for all nucleotide pairs.
+    This gives us P(i->j in time t) for all nucleotide pairs.
     """
 
     def __init__(self):
@@ -71,7 +71,7 @@ class GTRModel:
         self.nucleotides = ['A', 'C', 'G', 'T']
         self.nuc_to_idx = {
             'A': 0, 'C': 1, 'G': 2, 'T': 3,
-            'U': 3  # RNA: U → T mapping
+            'U': 3  # RNA: U -> T mapping
         }
 
         # Base frequencies (will estimate from data)
@@ -95,7 +95,7 @@ class GTRModel:
         Args:
             sequences: List of aligned sequences
         """
-        # Count nucleotide frequencies (RNA U → T)
+        # Count nucleotide frequencies (RNA U -> T)
         counts = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
         total = 0
 
@@ -138,12 +138,12 @@ class GTRModel:
         # Rate parameter indices
         # AC=0, AG=1, AT=2, CG=3, CT=4, GT=5
         rate_map = {
-            (0, 1): 0,  # A → C
-            (0, 2): 1,  # A → G
-            (0, 3): 2,  # A → T
-            (1, 2): 3,  # C → G
-            (1, 3): 4,  # C → T
-            (2, 3): 5,  # G → T
+            (0, 1): 0,  # A -> C
+            (0, 2): 1,  # A -> G
+            (0, 3): 2,  # A -> T
+            (1, 2): 3,  # C -> G
+            (1, 3): 4,  # C -> T
+            (2, 3): 5,  # G -> T
         }
 
         # Fill off-diagonal elements
@@ -235,7 +235,7 @@ class MaximumLikelihoodTree:
 
         # Step 2: Get initial tree from BioNJ
         print("\nStep 2: Building initial tree (BioNJ)...")
-        from bionj import build_bionj_tree
+        from rrna_phylo.methods.bionj import build_bionj_tree
         from rrna_phylo.distance.distance import calculate_distance_matrix
 
         dist_matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")
@@ -252,7 +252,7 @@ class MaximumLikelihoodTree:
         print("(Using BioNJ tree as ML estimate)")
         print("(Full optimization with NNI/SPR would go here)")
 
-        print("\n✓ ML tree inference complete!")
+        print("\n[OK] ML tree inference complete!")
         return initial_tree
 
     def _prepare_alignment(self):

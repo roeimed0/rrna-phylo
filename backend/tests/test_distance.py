@@ -27,7 +27,7 @@ def test_p_distance():
 
     assert abs(dist - 0.125) < 0.001
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_jukes_cantor():
@@ -50,7 +50,7 @@ def test_jukes_cantor():
 
     assert dist > 0.125  # JC should be larger than p-distance
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_distance_with_gaps():
@@ -74,7 +74,7 @@ def test_distance_with_gaps():
 
     assert abs(dist - 0.125) < 0.001
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_distance_matrix():
@@ -110,7 +110,7 @@ def test_distance_matrix():
     assert (matrix.diagonal() == 0).all()
     assert (matrix == matrix.T).all()
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def test_convenience_function():
@@ -127,13 +127,13 @@ def test_convenience_function():
 
     matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")
 
-    print(f"\n✓ Calculated {len(ids)}x{len(ids)} distance matrix")
+    print(f"\n[OK] Calculated {len(ids)}x{len(ids)} distance matrix")
     print(f"IDs: {ids}")
 
     assert len(ids) == 3
     assert matrix.shape == (3, 3)
 
-    print("\n✓ Test passed!")
+    print("\n[OK] Test passed!")
 
 
 def main():
@@ -149,7 +149,7 @@ def main():
     test_convenience_function()
 
     print("\n" + "=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 60)
     print()
 
