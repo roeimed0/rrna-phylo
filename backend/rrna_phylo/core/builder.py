@@ -19,6 +19,7 @@ from rrna_phylo.distance.distance import calculate_distance_matrix
 from rrna_phylo.distance.protein_distance import calculate_protein_distance_matrix
 from rrna_phylo.models.ml_tree_level3 import build_ml_tree_level3
 from rrna_phylo.methods.protein_ml import build_protein_ml_tree
+from rrna_phylo.consensus import majority_rule_consensus, compare_trees
 
 
 class PhylogeneticTreeBuilder:
@@ -340,6 +341,38 @@ def build_trees(
         results["upgma"] = upgma
         results["bionj"] = bionj
         results["ml"] = ml
+
+        # Build consensus tree from all three methods
+        ml_tree, _ = ml
+        all_trees = [upgma, bionj, ml_tree]
+
+        if verbose:
+            print("\n" + "=" * 70)
+            print("BUILDING CONSENSUS TREE")
+            print("=" * 70)
+
+        consensus_tree, support_values = majority_rule_consensus(all_trees, verbose=verbose)
+        results["consensus"] = consensus_tree
+        results["support_values"] = support_values
+
+        # Compare trees
+        comp_upgma_bionj = compare_trees(upgma, bionj)
+        comp_upgma_ml = compare_trees(upgma, ml_tree)
+        comp_bionj_ml = compare_trees(bionj, ml_tree)
+
+        results["tree_distances"] = {
+            "upgma_vs_bionj": comp_upgma_bionj,
+            "upgma_vs_ml": comp_upgma_ml,
+            "bionj_vs_ml": comp_bionj_ml
+        }
+
+        if verbose:
+            print(f"\nTree Similarity:")
+            print(f"  UPGMA vs BioNJ:  {comp_upgma_bionj['similarity']:.1%}")
+            print(f"  UPGMA vs ML:     {comp_upgma_ml['similarity']:.1%}")
+            print(f"  BioNJ vs ML:     {comp_bionj_ml['similarity']:.1%}")
+            print("=" * 70)
+
     elif method.lower() == "upgma":
         results["upgma"] = builder.build_upgma_tree(sequences)
     elif method.lower() == "bionj":

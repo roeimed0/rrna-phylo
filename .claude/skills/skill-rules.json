@@ -253,6 +253,54 @@
         ]
       },
       "description": "Maximum Likelihood phylogenetic tree inference from simple GTR implementation to RAxML-NG on Windows. Covers GTR substitution model mathematics, Felsenstein's pruning algorithm, tree search with NNI, likelihood calculation, RAxML-NG wrapper for Windows, and complete ML pipeline patterns."
+    },
+    "consensus-tree-methods": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "consensus tree",
+          "consensus",
+          "combine trees",
+          "tree comparison",
+          "robinson-foulds",
+          "RF distance",
+          "majority rule",
+          "strict consensus",
+          "bootstrap support",
+          "tree distance",
+          "merge trees",
+          "bipartition",
+          "split",
+          "support values",
+          "tree compatibility"
+        ],
+        "intentPatterns": [
+          "(build|create|compute).{0,20}consensus",
+          "(compare|distance|metric).{0,20}tree",
+          "(majority|strict).{0,20}(rule|consensus)",
+          "(robinson|foulds|RF).{0,20}distance",
+          "(bipartition|split).{0,20}(extract|count)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/**/consensus/**/*.py",
+          "backend/**/tree_distance*.py",
+          "backend/**/bipartition*.py",
+          "tests/**/test_consensus*.py"
+        ],
+        "contentPatterns": [
+          "def.*consensus",
+          "def.*robinson_foulds",
+          "def.*bipartition",
+          "class.*Consensus",
+          "support.*value",
+          "majority.*rule"
+        ]
+      },
+      "description": "Consensus tree methods for combining multiple phylogenetic trees with confidence scoring - includes Robinson-Foulds distance, majority-rule consensus, strict consensus, and bootstrap support calculation"
     }
   }
 }

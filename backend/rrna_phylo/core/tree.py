@@ -22,7 +22,7 @@ class TreeNode:
         height: Height of node in tree (used during construction)
     """
 
-    def __init__(self, name: str = None, left=None, right=None, distance: float = 0.0):
+    def __init__(self, name: str = None, left=None, right=None, distance: float = 0.0, support: float = None):
         """
         Initialize tree node.
 
@@ -31,11 +31,13 @@ class TreeNode:
             left: Left child TreeNode
             right: Right child TreeNode
             distance: Branch length from parent (evolutionary distance)
+            support: Bootstrap/consensus support value (0-100, optional)
         """
         self.name = name
         self.left = left
         self.right = right
         self.distance = distance
+        self.support = support  # NEW: Support value for consensus/bootstrap
         self.height = 0.0  # Used during tree construction
 
     def is_leaf(self) -> bool:
