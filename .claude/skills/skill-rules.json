@@ -208,6 +208,51 @@
         ]
       },
       "description": "Machine learning integration patterns for rRNA-Phylo covering three use cases - rRNA sequence classification (supervised learning with sklearn/PyTorch), multi-tree consensus (ensemble methods), and generative tree synthesis (GNNs/transformers). Includes feature engineering, model training, hyperparameter tuning, model serving, versioning, and evaluation metrics for bioinformatics ML workflows."
+    },
+    "ml-tree-methods": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "maximum likelihood",
+          "ML tree",
+          "GTR model",
+          "GTR+G",
+          "RAxML",
+          "likelihood calculation",
+          "Felsenstein",
+          "substitution model",
+          "rate matrix",
+          "matrix exponential",
+          "tree search",
+          "NNI",
+          "bootstrap"
+        ],
+        "intentPatterns": [
+          "(build|create|infer).{0,20}(ML|maximum likelihood).{0,20}tree",
+          "(GTR|substitution).{0,20}model",
+          "(calculate|compute).{0,20}likelihood",
+          "(RAxML|raxml).{0,20}(tree|analysis)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/**/ml_tree*.py",
+          "backend/**/raxml*.py",
+          "backend/**/likelihood*.py",
+          "tests/**/test_ml*.py"
+        ],
+        "contentPatterns": [
+          "class.*GTR",
+          "def.*likelihood",
+          "expm\\(",
+          "RAxML",
+          "probability_matrix",
+          "rate_matrix"
+        ]
+      },
+      "description": "Maximum Likelihood phylogenetic tree inference from simple GTR implementation to RAxML-NG on Windows. Covers GTR substitution model mathematics, Felsenstein's pruning algorithm, tree search with NNI, likelihood calculation, RAxML-NG wrapper for Windows, and complete ML pipeline patterns."
     }
   }
 }
