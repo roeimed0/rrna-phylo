@@ -7,7 +7,10 @@ the type and selecting the appropriate substitution model.
 """
 
 from typing import List, Tuple, Optional
+import tempfile
+import os
 from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.io.aligner import MuscleAligner
 from rrna_phylo.core.sequence_type import SequenceTypeDetector, SequenceType, get_appropriate_model
 from rrna_phylo.core.tree import TreeNode
 from rrna_phylo.methods.upgma import build_upgma_tree
@@ -41,6 +44,63 @@ class PhylogeneticTreeBuilder:
         self.detector = SequenceTypeDetector()
         self.seq_type = None
         self.model_name = None
+
+    def _check_alignment(self, sequences: List[Sequence]) -> bool:
+        """
+        Check if sequences are already aligned (same length).
+
+        Args:
+            sequences: List of sequences
+
+        Returns:
+            True if aligned, False otherwise
+        """
+        if not sequences:
+            return True
+
+        lengths = [seq.aligned_length for seq in sequences]
+        return len(set(lengths)) == 1
+
+    def _align_sequences(self, sequences: List[Sequence]) -> List[Sequence]:
+        """
+        Align sequences using MUSCLE if they're not already aligned.
+
+        Args:
+            sequences: List of sequences (aligned or unaligned)
+
+        Returns:
+            List of aligned sequences
+        """
+        # Check if already aligned
+        if self._check_alignment(sequences):
+            if self.verbose:
+                print("Sequences are already aligned (same length)")
+            return sequences
+
+        # Need alignment
+        if self.verbose:
+            print("\nSequences have different lengths - aligning with MUSCLE...")
+            for seq in sequences:
+                print(f"  {seq.id}: length={seq.aligned_length}")
+
+        try:
+            # Create temporary file for aligned output
+            with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".fasta") as tmp:
+                output_file = tmp.name
+
+            aligner = MuscleAligner()
+            aligned_seqs = aligner.align_sequences(sequences, output_file)
+
+            # Clean up temp file
+            if os.path.exists(output_file):
+                os.remove(output_file)
+
+            if self.verbose:
+                print(f"Alignment complete. Aligned length: {aligned_seqs[0].aligned_length}")
+
+            return aligned_seqs
+        except Exception as e:
+            raise RuntimeError(f"Alignment failed: {e}")
 
     def detect_and_validate(self, sequences: List[Sequence]) -> SequenceType:
         """
@@ -190,7 +250,7 @@ class PhylogeneticTreeBuilder:
         This is the main interface for multi-method phylogenetic analysis.
 
         Args:
-            sequences: Aligned sequences
+            sequences: Sequences (will be aligned automatically if needed)
             alpha: Gamma shape parameter for ML tree
 
         Returns:
@@ -203,10 +263,13 @@ class PhylogeneticTreeBuilder:
         # Detect type once
         self.detect_and_validate(sequences)
 
-        # Build all three trees
-        upgma_tree = self.build_upgma_tree(sequences)
-        bionj_tree = self.build_bionj_tree(sequences)
-        ml_result = self.build_ml_tree(sequences, alpha=alpha)
+        # Align sequences if needed
+        aligned_seqs = self._align_sequences(sequences)
+
+        # Build all three trees with aligned sequences
+        upgma_tree = self.build_upgma_tree(aligned_seqs)
+        bionj_tree = self.build_bionj_tree(aligned_seqs)
+        ml_result = self.build_ml_tree(aligned_seqs, alpha=alpha)
 
         if self.verbose:
             print("\n" + "=" * 70)
