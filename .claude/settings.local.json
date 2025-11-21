@@ -20,7 +20,9 @@
       "Bash(grep:*)",
       "Bash(gh pr create:*)",
       "Bash(timeout 60 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
-      "Bash(timeout 120 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)"
+      "Bash(timeout 120 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
+      "Bash(timeout 240 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []
