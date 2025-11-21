@@ -21,6 +21,18 @@ from rrna_phylo.core.tree import TreeNode
 from rrna_phylo.models.ml_tree import GTRModel
 from rrna_phylo.models.ml_tree_level2 import LikelihoodCalculator as BaseLikelihoodCalculator
 
+# Import Numba-accelerated functions
+try:
+    from rrna_phylo.models.numba_likelihood import (
+        calculate_transition_contrib,
+        calculate_root_likelihood,
+        calculate_log_likelihood_from_patterns,
+        pade_matrix_exp
+    )
+    NUMBA_AVAILABLE = True
+except ImportError:
+    NUMBA_AVAILABLE = False
+
 
 class GammaRates:
     """
@@ -238,7 +250,8 @@ class LikelihoodCalculatorLevel3:
         model: GTRModel,
         sequences: List[Sequence],
         alpha: float = 1.0,
-        n_categories: int = 4
+        n_categories: int = 4,
+        use_numba: bool = True
     ):
         """
         Initialize enhanced likelihood calculator.
@@ -248,6 +261,7 @@ class LikelihoodCalculatorLevel3:
             sequences: Aligned sequences
             alpha: Gamma shape parameter
             n_categories: Number of gamma categories
+            use_numba: Use Numba JIT acceleration (default True)
         """
         self.model = model
         self.sequences = sequences
@@ -261,6 +275,12 @@ class LikelihoodCalculatorLevel3:
 
         # Map sequence IDs to indices
         self.seq_id_to_idx = {seq.id: i for i, seq in enumerate(sequences)}
+
+        # Numba acceleration
+        self.use_numba = use_numba and NUMBA_AVAILABLE
+
+        # Cache for probability matrices
+        self.prob_matrix_cache = {}
 
     def calculate_likelihood(self, tree: TreeNode) -> float:
         """
@@ -338,26 +358,48 @@ class LikelihoodCalculatorLevel3:
 
             # Process children
             if node.left:
-                P_left = expm(Q * node.left.distance)
+                # Calculate transition probability matrix
+                if self.use_numba and node.left.distance < 0.5:
+                    # Use fast Pade approximation for short branches
+                    P_left = pade_matrix_exp(Q, node.left.distance)
+                else:
+                    # Use scipy for long branches or if Numba unavailable
+                    P_left = expm(Q * node.left.distance)
+
                 L_left = conditional_likelihood(node.left)
 
-                left_contrib = np.zeros(4)
-                for parent_state in range(4):
-                    for child_state in range(4):
-                        left_contrib[parent_state] += \
-                            P_left[parent_state, child_state] * L_left[child_state]
+                # Use Numba-accelerated calculation if available
+                if self.use_numba:
+                    left_contrib = calculate_transition_contrib(P_left, L_left)
+                else:
+                    left_contrib = np.zeros(4)
+                    for parent_state in range(4):
+                        for child_state in range(4):
+                            left_contrib[parent_state] += \
+                                P_left[parent_state, child_state] * L_left[child_state]
 
                 L *= left_contrib
 
             if node.right:
-                P_right = expm(Q * node.right.distance)
+                # Calculate transition probability matrix
+                if self.use_numba and node.right.distance < 0.5:
+                    # Use fast Pade approximation for short branches
+                    P_right = pade_matrix_exp(Q, node.right.distance)
+                else:
+                    # Use scipy for long branches or if Numba unavailable
+                    P_right = expm(Q * node.right.distance)
+
                 L_right = conditional_likelihood(node.right)
 
-                right_contrib = np.zeros(4)
-                for parent_state in range(4):
-                    for child_state in range(4):
-                        right_contrib[parent_state] += \
-                            P_right[parent_state, child_state] * L_right[child_state]
+                # Use Numba-accelerated calculation if available
+                if self.use_numba:
+                    right_contrib = calculate_transition_contrib(P_right, L_right)
+                else:
+                    right_contrib = np.zeros(4)
+                    for parent_state in range(4):
+                        for child_state in range(4):
+                            right_contrib[parent_state] += \
+                                P_right[parent_state, child_state] * L_right[child_state]
 
                 L *= right_contrib
 
@@ -367,7 +409,10 @@ class LikelihoodCalculatorLevel3:
         L_root = conditional_likelihood(tree)
 
         # Sum over root states
-        likelihood = np.sum(self.model.base_freq * L_root)
+        if self.use_numba:
+            likelihood = calculate_root_likelihood(L_root, self.model.base_freq)
+        else:
+            likelihood = np.sum(self.model.base_freq * L_root)
 
         return likelihood
 
