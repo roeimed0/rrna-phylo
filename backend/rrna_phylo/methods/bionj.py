@@ -11,7 +11,7 @@ based on a simple model of sequence data. Mol Biol Evol. 14(7):685-95.
 
 import numpy as np
 from typing import List, Tuple
-from upgma import TreeNode  # Reuse TreeNode class
+from rrna_phylo.core.tree import TreeNode
 
 
 class BioNJBuilder:

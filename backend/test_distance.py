@@ -2,8 +2,8 @@
 Test distance calculations.
 """
 
-from distance import DistanceCalculator, calculate_distance_matrix
-from fasta_parser import Sequence
+from rrna_phylo.distance.distance import DistanceCalculator, calculate_distance_matrix
+from rrna_phylo.io.fasta_parser import Sequence
 
 
 def test_p_distance():

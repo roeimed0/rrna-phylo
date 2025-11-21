@@ -13,7 +13,7 @@ derived from large databases of protein alignments.
 import numpy as np
 from typing import List
 from scipy.linalg import expm
-from fasta_parser import Sequence
+from rrna_phylo.io.fasta_parser import Sequence
 
 
 class ProteinModel:

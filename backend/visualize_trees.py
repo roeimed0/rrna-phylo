@@ -2,11 +2,11 @@
 Visualize phylogenetic trees in ASCII format.
 """
 
-from fasta_parser import Sequence
-from distance import calculate_distance_matrix
-from upgma import build_upgma_tree, UPGMABuilder
-from bionj import build_bionj_tree, BioNJBuilder
-from ml_tree_level3 import build_ml_tree_level3
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.distance.distance import calculate_distance_matrix
+from rrna_phylo.methods.upgma import build_upgma_tree, UPGMABuilder
+from rrna_phylo.methods.bionj import build_bionj_tree, BioNJBuilder
+from rrna_phylo.models.ml_tree_level3 import build_ml_tree_level3
 
 
 def print_tree_ascii(node, prefix="", is_tail=True, file=None):

@@ -15,9 +15,9 @@ from scipy.linalg import expm
 from scipy.optimize import minimize_scalar
 from typing import List, Tuple, Dict, Optional
 from copy import deepcopy
-from fasta_parser import Sequence
-from upgma import TreeNode
-from ml_tree import GTRModel
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.core.tree import TreeNode
+from rrna_phylo.models.ml_tree import GTRModel
 
 
 class LikelihoodCalculator:
@@ -390,7 +390,7 @@ class MLTreeBuilder:
             print("\nStep 2: Building initial tree (BioNJ)...")
 
         from bionj import build_bionj_tree
-        from distance import calculate_distance_matrix
+        from rrna_phylo.distance.distance import calculate_distance_matrix
 
         dist_matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")
         initial_tree = build_bionj_tree(dist_matrix, ids)

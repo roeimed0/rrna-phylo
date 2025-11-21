@@ -3,7 +3,7 @@ Test UPGMA tree building.
 """
 
 import numpy as np
-from upgma import UPGMABuilder, build_upgma_tree, TreeNode
+from rrna_phylo.methods.upgma import UPGMABuilder, build_upgma_tree, TreeNode
 
 
 def test_simple_tree():
@@ -99,7 +99,7 @@ def test_with_aligned_sequences():
     # In real use: parse FASTA → align with MUSCLE → calculate distances → build tree
 
     from fasta_parser import Sequence
-    from distance import calculate_distance_matrix
+    from rrna_phylo.distance.distance import calculate_distance_matrix
 
     # Create aligned sequences
     sequences = [

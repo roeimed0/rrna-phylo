@@ -4,9 +4,9 @@ Test Maximum Likelihood Level 3 - GTR+Gamma with pattern compression.
 
 import numpy as np
 import time
-from fasta_parser import Sequence
-from ml_tree_level2 import build_ml_tree_level2
-from ml_tree_level3 import (
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.models.ml_tree_level2 import build_ml_tree_level2
+from rrna_phylo.models.ml_tree_level3 import (
     GammaRates,
     SitePatternCompressor,
     build_ml_tree_level3

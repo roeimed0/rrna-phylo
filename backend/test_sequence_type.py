@@ -2,10 +2,10 @@
 Test sequence type detection and RNA support.
 """
 
-from fasta_parser import Sequence
-from sequence_type import SequenceTypeDetector, SequenceType, get_appropriate_model
-from ml_tree import GTRModel
-from ml_tree_level3 import build_ml_tree_level3
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.core.sequence_type import SequenceTypeDetector, SequenceType, get_appropriate_model
+from rrna_phylo.models.ml_tree import GTRModel
+from rrna_phylo.models.ml_tree_level3 import build_ml_tree_level3
 import numpy as np
 
 

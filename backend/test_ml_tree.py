@@ -2,8 +2,8 @@
 Test our own Maximum Likelihood implementation.
 """
 
-from fasta_parser import Sequence
-from ml_tree import GTRModel, MaximumLikelihoodTree, build_ml_tree
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.models.ml_tree import GTRModel, MaximumLikelihoodTree, build_ml_tree
 import numpy as np
 
 

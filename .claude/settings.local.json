@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(echo:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(find:*)",
+      "Bash(for file in distance.py compare_trees.py ml_tree_level2.py ml_tree.py protein_distance.py ml_tree_level3.py phylo_builder.py protein_ml.py protein_models.py)",
+      "Bash(do sed -i 's/^from fasta_parser import/from rrna_phylo.io.fasta_parser import/' \"$file\")",
+      "Bash(done)",
+      "Bash(for file in visualize_trees.py test_aligner.py test_distance.py test_ml_level3.py test_ml_level2.py test_parser.py test_ml_tree.py test_phylo_builder.py test_sequence_type.py test_protein_phylo.py)",
+      "Bash(C:/Users/User/anaconda3/Scripts/conda.exe run -n gene_prediction python -c \"from phylo_builder import build_trees; print(''phylo_builder imports working!'')\")",
+      "Bash(C:/Users/User/anaconda3/Scripts/conda.exe run:*)",
+      "Bash(C:/Users/User/anaconda3/envs/gene_prediction/python.exe -c \"from phylo_builder import build_trees; from rrna_phylo.models import build_ml_tree_level3; print(''Model imports working!'')\")",
+      "Bash(C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)"
     ],
     "deny": [],
     "ask": []

@@ -11,7 +11,7 @@ Each type requires different substitution models and matrices.
 
 from enum import Enum
 from typing import List
-from fasta_parser import Sequence
+from rrna_phylo.io.fasta_parser import Sequence
 
 
 class SequenceType(Enum):

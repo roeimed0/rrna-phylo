@@ -5,11 +5,11 @@ Tests protein distance calculation, ML trees, and full integration.
 """
 
 import numpy as np
-from fasta_parser import Sequence
-from protein_distance import ProteinDistanceCalculator, calculate_protein_distance_matrix
-from protein_ml import build_protein_ml_tree
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.distance.protein_distance import ProteinDistanceCalculator, calculate_protein_distance_matrix
+from rrna_phylo.methods.protein_ml import build_protein_ml_tree
 from phylo_builder import build_trees
-from sequence_type import SequenceType
+from rrna_phylo.core.sequence_type import SequenceType
 
 
 def test_protein_distance():

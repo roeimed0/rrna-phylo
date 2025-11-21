@@ -3,53 +3,13 @@ UPGMA (Unweighted Pair Group Method with Arithmetic Mean) tree building.
 
 UPGMA is a simple hierarchical clustering method that assumes a constant
 molecular clock (equal evolutionary rates across all lineages).
+
+Note: TreeNode class is now imported from rrna_phylo.core.tree
 """
 
 import numpy as np
 from typing import List, Tuple, Dict
-
-
-class TreeNode:
-    """Represents a node in a phylogenetic tree."""
-
-    def __init__(self, name: str = None, left=None, right=None, distance: float = 0.0):
-        """
-        Initialize tree node.
-
-        Args:
-            name: Name of the node (for leaves)
-            left: Left child node
-            right: Right child node
-            distance: Branch length from parent
-        """
-        self.name = name
-        self.left = left
-        self.right = right
-        self.distance = distance
-        self.height = 0.0 
-
-    def is_leaf(self) -> bool:
-        """Check if this is a leaf node."""
-        return self.left is None and self.right is None
-
-    def to_newick(self) -> str:
-        """
-        Convert tree to Newick format.
-
-        Newick format: ((A:0.1,B:0.2):0.3,C:0.4);
-        """
-        if self.is_leaf():
-            return f"{self.name}:{self.distance:.6f}"
-        else:
-            left_str = self.left.to_newick()
-            right_str = self.right.to_newick()
-            return f"({left_str},{right_str}):{self.distance:.6f}"
-
-    def __repr__(self):
-        if self.is_leaf():
-            return f"Leaf({self.name})"
-        else:
-            return f"Internal(left={self.left.name if self.left else '?'}, right={self.right.name if self.right else '?'})"
+from rrna_phylo.core.tree import TreeNode
 
 
 class UPGMABuilder:

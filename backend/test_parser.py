@@ -3,7 +3,7 @@ Test the FASTA parser.
 """
 
 import os
-from fasta_parser import FastaParser, parse_fasta, Sequence
+from rrna_phylo.io.fasta_parser import FastaParser, parse_fasta, Sequence
 
 
 def create_test_fasta(filepath: str, aligned: bool = False):

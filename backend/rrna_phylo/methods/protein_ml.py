@@ -12,10 +12,10 @@ import numpy as np
 from scipy.linalg import expm
 from scipy.optimize import minimize_scalar
 from typing import List, Tuple
-from fasta_parser import Sequence
-from upgma import TreeNode
-from protein_models import ProteinModel, get_protein_model
-from ml_tree_level3 import GammaRates, SitePatternCompressor
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.core.tree import TreeNode
+from rrna_phylo.models.protein_models import ProteinModel, get_protein_model
+from rrna_phylo.models.ml_tree_level3 import GammaRates, SitePatternCompressor
 
 
 class ProteinLikelihoodCalculator:
@@ -359,7 +359,7 @@ def build_protein_ml_tree(
     if verbose:
         print("\nStep 2: Building initial tree (BioNJ with Poisson distance)...")
 
-    from protein_distance import calculate_protein_distance_matrix
+    from rrna_phylo.distance.protein_distance import calculate_protein_distance_matrix
     from bionj import build_bionj_tree
 
     dist_matrix, ids = calculate_protein_distance_matrix(sequences, model="poisson")

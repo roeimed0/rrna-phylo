@@ -5,9 +5,9 @@ Tests automatic model selection for DNA, RNA, and Protein sequences.
 """
 
 import numpy as np
-from fasta_parser import Sequence
+from rrna_phylo.io.fasta_parser import Sequence
 from phylo_builder import PhylogeneticTreeBuilder, build_trees
-from sequence_type import SequenceType
+from rrna_phylo.core.sequence_type import SequenceType
 
 
 def test_dna_automatic_detection():
@@ -167,14 +167,12 @@ def test_protein_detection():
     assert seq_type == SequenceType.PROTEIN, "Should detect as protein"
     assert builder.model_name == "WAG", "Should use WAG for protein"
 
-    # Try to build tree (should raise NotImplementedError)
-    print("\nTrying to build UPGMA tree (should fail gracefully)...")
-    try:
-        upgma = builder.build_upgma_tree(protein_seqs)
-        assert False, "Should have raised NotImplementedError"
-    except NotImplementedError as e:
-        print(f"Expected error: {e}")
-        print("✓ Correctly raised NotImplementedError for protein UPGMA")
+    # Try to build tree (now fully supported!)
+    print("\nTrying to build UPGMA tree (now fully supported)...")
+    upgma = builder.build_upgma_tree(protein_seqs)
+    print(f"UPGMA tree built successfully: {upgma.to_newick()};")
+    assert upgma is not None, "Should build protein UPGMA tree"
+    print("✓ Correctly built protein UPGMA tree")
 
     print("\n✓ Protein detection test passed!")
 

@@ -8,17 +8,17 @@ This tests:
 4. Complete ML pipeline
 """
 
-from fasta_parser import Sequence
-from ml_tree_level2 import (
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.models.ml_tree_level2 import (
     LikelihoodCalculator,
     BranchLengthOptimizer,
     NNISearcher,
     MLTreeBuilder,
     build_ml_tree_level2
 )
-from ml_tree import GTRModel
-from bionj import build_bionj_tree
-from distance import calculate_distance_matrix
+from rrna_phylo.models.ml_tree import GTRModel
+from rrna_phylo.methods.bionj import build_bionj_tree
+from rrna_phylo.distance.distance import calculate_distance_matrix
 
 
 def test_likelihood_calculation():

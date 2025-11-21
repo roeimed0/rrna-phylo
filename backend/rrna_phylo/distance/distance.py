@@ -7,7 +7,7 @@ Uses Jukes-Cantor correction - the gold standard for phylogenetics.
 import math
 from typing import List, Tuple
 import numpy as np
-from fasta_parser import Sequence
+from rrna_phylo.io.fasta_parser import Sequence
 
 
 class DistanceCalculator:

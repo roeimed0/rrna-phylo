@@ -6,10 +6,10 @@ a molecular clock (UPGMA) vs those that handle variable rates (BioNJ).
 """
 
 import numpy as np
-from fasta_parser import Sequence
-from distance import calculate_distance_matrix
-from upgma import build_upgma_tree, UPGMABuilder
-from bionj import build_bionj_tree, BioNJBuilder
+from rrna_phylo.io.fasta_parser import Sequence
+from rrna_phylo.distance.distance import calculate_distance_matrix
+from rrna_phylo.methods.upgma import build_upgma_tree, UPGMABuilder
+from rrna_phylo.methods.bionj import build_bionj_tree, BioNJBuilder
 
 
 def compare_simple_example():

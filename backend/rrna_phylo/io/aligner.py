@@ -1,6 +1,6 @@
 import os
 import subprocess
-from fasta_parser import Sequence, FastaParser
+from rrna_phylo.io.fasta_parser import Sequence, FastaParser
 from typing import List, Optional
 import tempfile
 

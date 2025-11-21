@@ -3,8 +3,8 @@ Test BioNJ tree building.
 """
 
 import numpy as np
-from bionj import BioNJBuilder, build_bionj_tree
-from upgma import build_upgma_tree
+from rrna_phylo.methods.bionj import BioNJBuilder, build_bionj_tree
+from rrna_phylo.methods.upgma import build_upgma_tree
 
 
 def test_simple_bionj():
@@ -99,7 +99,7 @@ def test_complete_pipeline():
     print("=" * 60)
 
     from fasta_parser import Sequence
-    from distance import calculate_distance_matrix
+    from rrna_phylo.distance.distance import calculate_distance_matrix
 
     # Create aligned sequences
     sequences = [

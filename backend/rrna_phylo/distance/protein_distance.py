@@ -8,7 +8,7 @@ Instead, we use protein-specific distance corrections.
 import math
 from typing import List, Tuple
 import numpy as np
-from fasta_parser import Sequence
+from rrna_phylo.io.fasta_parser import Sequence
 
 
 class ProteinDistanceCalculator:

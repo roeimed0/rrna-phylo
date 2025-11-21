@@ -1,7 +1,7 @@
 import tempfile
 import os
-from aligner import MuscleAligner
-from fasta_parser import Sequence
+from rrna_phylo.io.aligner import MuscleAligner
+from rrna_phylo.io.fasta_parser import Sequence
 
 # Determine project root relative to current file
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
