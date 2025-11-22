@@ -192,7 +192,7 @@ def test_bootstrap_tree_sequential():
     tree = bootstrap_tree(
         primate_seqs,
         bionj_builder_for_test,
-        n_replicates=20,
+        n_replicates=1000,
         n_jobs=1,  # Sequential
         verbose=True,
         random_seed=42
@@ -233,7 +233,7 @@ def test_bootstrap_tree_parallel():
     tree = bootstrap_tree(
         primate_seqs,
         bionj_builder_for_test,
-        n_replicates=20,
+        n_replicates=1000,
         n_jobs=-1,  # Use all cores
         verbose=True,
         random_seed=42
@@ -261,14 +261,23 @@ def test_bootstrap_tree_parallel():
     tree2 = bootstrap_tree(
         primate_seqs,
         bionj_builder_for_test,
-        n_replicates=20,
+        n_replicates=1000,
         n_jobs=-1,
         verbose=False,
         random_seed=42
     )
 
+    # Create new list and new function to avoid closure issues
     support_values2 = []
-    collect_support(tree2)
+    def collect_support2(node):
+        if not node.is_leaf() and hasattr(node, 'support') and node.support is not None:
+            support_values2.append(node.support)
+        if node.left:
+            collect_support2(node.left)
+        if node.right:
+            collect_support2(node.right)
+
+    collect_support2(tree2)
 
     print(f"\n\nReproducibility test:")
     print(f"  Run 1 support values: {[f'{s:.1f}' for s in support_values]}")
