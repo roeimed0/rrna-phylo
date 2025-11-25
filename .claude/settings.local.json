@@ -22,7 +22,13 @@
       "Bash(timeout 60 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
       "Bash(timeout 120 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
       "Bash(timeout 240 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(test:*)",
+      "Bash(if [ -f test_bootstrap_investigation_output.txt ])",
+      "Bash(then tail -100 test_bootstrap_investigation_output.txt)",
+      "Bash(else echo \"Still running...\")",
+      "Bash(fi)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

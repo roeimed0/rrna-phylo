@@ -354,6 +354,117 @@
         ]
       },
       "description": "Advanced Maximum Likelihood phylogenetics with model selection (AIC/BIC), tree search algorithms (NNI/SPR/TBR), and performance optimization (Numba/GPU)"
+    },
+    "tree-visualization": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "visualize",
+          "visualization",
+          "plot tree",
+          "draw tree",
+          "tree image",
+          "tree figure",
+          "ggtree",
+          "matplotlib",
+          "circular layout",
+          "rectangular layout",
+          "radial tree",
+          "phylogram",
+          "cladogram",
+          "export tree",
+          "save figure",
+          "publication figure",
+          "tree comparison",
+          "annotate tree",
+          "color branches",
+          "highlight clade"
+        ],
+        "intentPatterns": [
+          "(visualize|plot|draw|display).{0,20}(tree|phylogen)",
+          "(create|generate|make).{0,20}(figure|image|plot)",
+          "(circular|rectangular|radial).{0,20}layout",
+          "(export|save).{0,20}(tree|figure|image)",
+          "(ggtree|ggplot|matplotlib).{0,20}(tree|plot)",
+          "(annotate|color|highlight).{0,20}(tree|branch|clade)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "backend/**/visualize*.py",
+          "backend/**/plot*.py",
+          "backend/**/tree_comparison*.py",
+          "backend/create_tree*.py",
+          "tests/**/test_visual*.py"
+        ],
+        "contentPatterns": [
+          "import matplotlib",
+          "from matplotlib import",
+          "plt\\.savefig",
+          "draw_tree",
+          "plot_tree",
+          "def.*visual",
+          "ggtree",
+          "circular.*layout"
+        ]
+      },
+      "description": "Comprehensive guide to phylogenetic tree visualization including matplotlib (Python), ggtree (R), and publication-quality figure generation. Covers rectangular, circular, radial layouts, bootstrap annotations, branch coloring, clade highlighting, and interactive visualizations. Based on best practices from Yulab's Tree Data Book."
+    },
+    "intra-strain-phylogeny": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "intra-strain",
+          "multi-strain",
+          "multiple copies",
+          "rRNA copies",
+          "rRNA operon",
+          "same genome",
+          "same strain",
+          "gene conversion",
+          "concerted evolution",
+          "paralog",
+          "ortholog",
+          "within genome",
+          "tight clustering",
+          "multiple rRNA",
+          "7 copies",
+          "identical copies",
+          "branch length",
+          "intra-species",
+          "inter-species"
+        ],
+        "intentPatterns": [
+          "(intra|within).{0,20}(strain|genome|species)",
+          "(multi|inter|between).{0,20}(strain|species)",
+          "(multiple|several).{0,20}(copies|rRNA)",
+          "(same|single).{0,20}(genome|strain)",
+          "copies.{0,20}(cluster|group)",
+          "(tight|close).{0,20}clustering",
+          "(gene|rRNA).{0,20}(conversion|operon)",
+          "(paralog|ortholog).{0,20}(comparison|distinction)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*_copies*.fasta",
+          "**/*_multi*.fasta",
+          "**/*_strain*.py",
+          "tests/**/test_*strain*.py"
+        ],
+        "contentPatterns": [
+          "multiple.*copies",
+          "rRNA.*operon",
+          "gene.*conversion",
+          "intra.*strain",
+          "dist.*0\\.00"
+        ]
+      },
+      "description": "Understanding intra-strain phylogeny (multiple rRNA copies within one genome) versus multi-strain phylogeny (comparing different species/strains). Covers expected branch lengths, biological significance, concerted evolution, gene conversion, and interpretation guidelines for phylogenetic trees with multiple copies from same genome."
     }
   }
 }

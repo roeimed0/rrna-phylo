@@ -349,18 +349,16 @@ def build_trees(
         results["bionj"] = bionj
         results["ml"] = ml
 
-        # Build consensus tree from all three methods
+        # NOTE: Consensus tree functionality is currently disabled due to bugs
+        # The consensus algorithm produces incorrect topologies that don't match input trees
+        # See CONSENSUS_TODO.md for details and future implementation plans
         ml_tree, _ = ml
         all_trees = [upgma, bionj, ml_tree]
 
-        if verbose:
-            print("\n" + "=" * 70)
-            print("BUILDING CONSENSUS TREE")
-            print("=" * 70)
-
-        consensus_tree, support_values = majority_rule_consensus(all_trees, verbose=verbose)
-        results["consensus"] = consensus_tree
-        results["support_values"] = support_values
+        # Removed broken consensus implementation
+        # consensus_tree, support_values = majority_rule_consensus(all_trees, verbose=verbose)
+        # results["consensus"] = consensus_tree
+        # results["support_values"] = support_values
 
         # Compare trees
         comp_upgma_bionj = compare_trees(upgma, bionj)
