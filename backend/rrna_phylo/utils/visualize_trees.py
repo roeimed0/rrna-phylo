@@ -9,7 +9,7 @@ from rrna_phylo.methods.bionj import build_bionj_tree, BioNJBuilder
 from rrna_phylo.models.ml_tree_level3 import build_ml_tree_level3
 
 
-def print_tree_ascii(node, prefix="", is_tail=True, file=None):
+def print_tree_ascii(node, prefix="", is_tail=True, file=None, show_support=True):
     """
     Print tree in ASCII art format.
 
@@ -18,6 +18,7 @@ def print_tree_ascii(node, prefix="", is_tail=True, file=None):
         prefix: Prefix for current line
         is_tail: Whether this is the last child
         file: File to write to (default: stdout)
+        show_support: Whether to show bootstrap support values (default: True)
     """
     import sys
     if file is None:
@@ -29,7 +30,11 @@ def print_tree_ascii(node, prefix="", is_tail=True, file=None):
     if node.is_leaf():
         print(f"{prefix}{connector}{node.name} (dist: {node.distance:.4f})", file=file)
     else:
-        print(f"{prefix}{connector}Internal (dist: {node.distance:.4f})", file=file)
+        # Show bootstrap support if available
+        support_str = ""
+        if show_support and hasattr(node, 'support') and node.support is not None:
+            support_str = f" [bootstrap: {node.support:.1f}%]"
+        print(f"{prefix}{connector}Internal (dist: {node.distance:.4f}){support_str}", file=file)
 
         # Recurse to children
         if node.left or node.right:
@@ -39,12 +44,12 @@ def print_tree_ascii(node, prefix="", is_tail=True, file=None):
 
             if node.left and node.right:
                 # Both children exist
-                print_tree_ascii(node.left, new_prefix, False, file)
-                print_tree_ascii(node.right, new_prefix, True, file)
+                print_tree_ascii(node.left, new_prefix, False, file, show_support)
+                print_tree_ascii(node.right, new_prefix, True, file, show_support)
             elif node.left:
-                print_tree_ascii(node.left, new_prefix, True, file)
+                print_tree_ascii(node.left, new_prefix, True, file, show_support)
             elif node.right:
-                print_tree_ascii(node.right, new_prefix, True, file)
+                print_tree_ascii(node.right, new_prefix, True, file, show_support)
 
 
 def visualize_all_trees():

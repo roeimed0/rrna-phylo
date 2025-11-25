@@ -17,8 +17,9 @@ from rrna_phylo.methods.upgma import build_upgma_tree
 from rrna_phylo.methods.bionj import build_bionj_tree
 from rrna_phylo.distance.distance import calculate_distance_matrix
 from rrna_phylo.distance.protein_distance import calculate_protein_distance_matrix
-from rrna_phylo.models.ml_tree_level3 import build_ml_tree_level3
+from rrna_phylo.models.ml_tree_level4 import build_ml_tree_level4
 from rrna_phylo.methods.protein_ml import build_protein_ml_tree
+from rrna_phylo.consensus import majority_rule_consensus, compare_trees
 
 
 class PhylogeneticTreeBuilder:
@@ -199,13 +200,13 @@ class PhylogeneticTreeBuilder:
 
     def build_ml_tree(self, sequences: List[Sequence], alpha: float = 1.0) -> Tuple[TreeNode, float]:
         """
-        Build Maximum Likelihood tree.
+        Build Maximum Likelihood tree using Level 4 (automatic model selection + tree search).
 
-        Works for DNA, RNA (GTR+Gamma), and Protein (WAG/LG/JTT+Gamma).
+        Works for DNA, RNA (automatic GTR model selection), and Protein (WAG/LG/JTT+Gamma).
 
         Args:
             sequences: Aligned sequences
-            alpha: Gamma shape parameter (1.0 = moderate rate variation)
+            alpha: Gamma shape parameter (1.0 = moderate rate variation, or 'auto' for optimization)
 
         Returns:
             (ml_tree, log_likelihood)
@@ -218,7 +219,7 @@ class PhylogeneticTreeBuilder:
             if self.seq_type == SequenceType.PROTEIN:
                 print(f"METHOD 3: Maximum Likelihood ({self.model_name}+Gamma)")
             else:
-                print("METHOD 3: Maximum Likelihood (GTR+Gamma)")
+                print("METHOD 3: Maximum Likelihood (GTR+Gamma with Model Selection + NNI)")
             print("=" * 70)
 
         # Use appropriate ML method
@@ -230,7 +231,14 @@ class PhylogeneticTreeBuilder:
                 verbose=self.verbose
             )
         else:
-            tree, logL = build_ml_tree_level3(sequences, alpha=alpha, verbose=self.verbose)
+            # Use Level 4 with automatic model selection and tree search
+            tree, logL, metadata = build_ml_tree_level4(
+                sequences,
+                model='auto',
+                alpha=alpha,
+                tree_search='nni',
+                verbose=self.verbose
+            )
 
         if self.verbose:
             print(f"ML tree built successfully")
@@ -340,6 +348,36 @@ def build_trees(
         results["upgma"] = upgma
         results["bionj"] = bionj
         results["ml"] = ml
+
+        # NOTE: Consensus tree functionality is currently disabled due to bugs
+        # The consensus algorithm produces incorrect topologies that don't match input trees
+        # See CONSENSUS_TODO.md for details and future implementation plans
+        ml_tree, _ = ml
+        all_trees = [upgma, bionj, ml_tree]
+
+        # Removed broken consensus implementation
+        # consensus_tree, support_values = majority_rule_consensus(all_trees, verbose=verbose)
+        # results["consensus"] = consensus_tree
+        # results["support_values"] = support_values
+
+        # Compare trees
+        comp_upgma_bionj = compare_trees(upgma, bionj)
+        comp_upgma_ml = compare_trees(upgma, ml_tree)
+        comp_bionj_ml = compare_trees(bionj, ml_tree)
+
+        results["tree_distances"] = {
+            "upgma_vs_bionj": comp_upgma_bionj,
+            "upgma_vs_ml": comp_upgma_ml,
+            "bionj_vs_ml": comp_bionj_ml
+        }
+
+        if verbose:
+            print(f"\nTree Similarity:")
+            print(f"  UPGMA vs BioNJ:  {comp_upgma_bionj['similarity']:.1%}")
+            print(f"  UPGMA vs ML:     {comp_upgma_ml['similarity']:.1%}")
+            print(f"  BioNJ vs ML:     {comp_bionj_ml['similarity']:.1%}")
+            print("=" * 70)
+
     elif method.lower() == "upgma":
         results["upgma"] = builder.build_upgma_tree(sequences)
     elif method.lower() == "bionj":

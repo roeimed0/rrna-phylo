@@ -8,9 +8,31 @@ A comprehensive phylogenetic tree inference system that works for **any homologo
 
 ## Quick Start
 
+### Option 1: Command-Line Interface (Easiest!)
+
+```bash
+# Build trees from a FASTA file
+python rrna-phylo.py sequences.fasta
+
+# With bootstrap support
+python rrna-phylo.py sequences.fasta --bootstrap 50
+
+# Save to specific directory
+python rrna-phylo.py sequences.fasta -o results/
+```
+
+That's it! The CLI automatically:
+- ✅ Detects sequence type (DNA, RNA, or Protein)
+- ✅ Selects appropriate substitution model
+- ✅ Builds trees with all three methods
+- ✅ Exports Newick files + shows ASCII trees
+
+**See [CLI_USAGE.md](CLI_USAGE.md) for complete guide**
+
+### Option 2: Python API
+
 ```python
-from fasta_parser import FastaParser
-from phylo_builder import build_trees
+from rrna_phylo import FastaParser, build_trees
 
 # 1. Parse your sequences
 parser = FastaParser()
@@ -26,16 +48,9 @@ ml_tree, logL = results["ml"]
 
 print(f"Detected type: {results['type'].value}")
 print(f"Model used: {results['model']}")
-print(f"UPGMA: {upgma.to_newick()}")
-print(f"BioNJ: {bionj.to_newick()}")
-print(f"ML: {ml_tree.to_newick()}")
 ```
 
-That's it! The system automatically:
-- ✅ Detects sequence type (DNA, RNA, or Protein)
-- ✅ Selects appropriate substitution model
-- ✅ Builds trees with all three methods
-- ✅ Returns results ready for analysis
+**See [API-USAGE.md](API-USAGE.md) for complete API reference**
 
 ---
 
