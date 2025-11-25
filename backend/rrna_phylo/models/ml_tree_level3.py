@@ -273,8 +273,8 @@ class LikelihoodCalculatorLevel3:
         # Site pattern compression
         self.compressor = SitePatternCompressor(sequences)
 
-        # Map sequence IDs to indices
-        self.seq_id_to_idx = {seq.id: i for i, seq in enumerate(sequences)}
+        # Map sequence display names to indices (for tree node lookup)
+        self.seq_id_to_idx = {seq.display_name: i for i, seq in enumerate(sequences)}
 
         # Numba acceleration
         self.use_numba = use_numba and NUMBA_AVAILABLE

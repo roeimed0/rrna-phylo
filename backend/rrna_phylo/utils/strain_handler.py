@@ -5,7 +5,7 @@ This module provides functions to handle multiple rRNA copies from the same geno
 preventing overrepresentation bias in phylogenetic trees.
 """
 
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Set
 from collections import defaultdict
 import re
 from rrna_phylo.io.fasta_parser import Sequence
@@ -249,6 +249,250 @@ def get_strain_summary(sequences: List[Sequence]) -> str:
         lines.append(f"  - {strain_id} ({species}): {len(strain_seqs)} cop{'y' if len(strain_seqs) == 1 else 'ies'}")
 
     return '\n'.join(lines)
+
+
+def remove_exact_duplicates(sequences: List[Sequence]) -> Tuple[List[Sequence], Dict[str, List[str]]]:
+    """
+    Remove sequences with identical nucleotide sequences.
+
+    This is the first step of deduplication - remove 100% identical sequences.
+
+    Args:
+        sequences: List of sequences
+
+    Returns:
+        Tuple of:
+        - List of unique sequences (one per unique sequence)
+        - Dictionary mapping unique sequence to list of duplicate IDs
+
+    Example:
+        >>> seqs = [
+        ...     Sequence("copy1", "E. coli", "ATGC"),
+        ...     Sequence("copy2", "E. coli", "ATGC"),  # exact duplicate
+        ...     Sequence("copy3", "E. coli", "ATGC"),  # exact duplicate
+        ...     Sequence("copy4", "P. aeruginosa", "GGCC")
+        ... ]
+        >>> unique, duplicates = remove_exact_duplicates(seqs)
+        >>> len(unique)
+        2  # One ATGC, one GGCC
+        >>> duplicates["copy1"]
+        ['copy1', 'copy2', 'copy3']
+    """
+    # Map sequence -> first occurrence
+    seq_to_first = {}
+    # Map first sequence ID -> list of all duplicate IDs
+    duplicates_map = defaultdict(list)
+
+    for seq in sequences:
+        seq_str = seq.sequence.upper().replace('-', '')  # Remove gaps for comparison
+
+        if seq_str not in seq_to_first:
+            # First occurrence of this sequence
+            seq_to_first[seq_str] = seq
+            duplicates_map[seq.id].append(seq.id)
+        else:
+            # Duplicate found
+            first_seq = seq_to_first[seq_str]
+            duplicates_map[first_seq.id].append(seq.id)
+
+    # Return unique sequences
+    unique_seqs = list(seq_to_first.values())
+    return unique_seqs, dict(duplicates_map)
+
+
+def calculate_sequence_similarity(seq1: str, seq2: str) -> float:
+    """
+    Calculate pairwise sequence identity (percentage of matching positions).
+
+    Args:
+        seq1: First sequence
+        seq2: Second sequence
+
+    Returns:
+        Similarity as percentage (0-100)
+
+    Example:
+        >>> calculate_sequence_similarity("ATGC", "ATGC")
+        100.0
+        >>> calculate_sequence_similarity("ATGC", "ATGG")
+        75.0
+    """
+    if len(seq1) != len(seq2):
+        # For unequal lengths, use the shorter one as denominator
+        min_len = min(len(seq1), len(seq2))
+        matches = sum(1 for i in range(min_len) if seq1[i] == seq2[i])
+        return (matches / min_len) * 100.0
+
+    matches = sum(1 for a, b in zip(seq1, seq2) if a == b)
+    return (matches / len(seq1)) * 100.0
+
+
+def cluster_similar_sequences(
+    sequences: List[Sequence],
+    similarity_threshold: float = 99.5,
+    species_aware: bool = True
+) -> List[List[Sequence]]:
+    """
+    Cluster sequences by similarity using simple greedy clustering.
+
+    IMPORTANT: By default, only clusters sequences from the SAME species/genome.
+    This prevents accidentally merging phylogenetically distinct sequences.
+
+    Args:
+        sequences: List of sequences to cluster
+        similarity_threshold: Minimum similarity percentage (default 99.5%)
+        species_aware: Only cluster sequences from same species (default True, RECOMMENDED)
+
+    Returns:
+        List of clusters, each cluster is a list of similar sequences
+
+    Example:
+        >>> seqs = [
+        ...     Sequence("seq1", "E. coli", "ATGCATGC"),
+        ...     Sequence("seq2", "E. coli", "ATGCATGC"),  # 100% similar to seq1, same species
+        ...     Sequence("seq3", "Salmonella", "ATGCATGC"),  # 100% similar but DIFFERENT species
+        ... ]
+        >>> clusters = cluster_similar_sequences(seqs, similarity_threshold=99.0, species_aware=True)
+        >>> len(clusters)
+        2  # seq1+seq2 in one cluster, seq3 in another (different species)
+    """
+    if not sequences:
+        return []
+
+    # Clusters: list of lists
+    clusters = []
+    # Track which sequences are already clustered
+    clustered = set()
+
+    for i, seq in enumerate(sequences):
+        if seq.id in clustered:
+            continue
+
+        # Start new cluster with this sequence
+        cluster = [seq]
+        clustered.add(seq.id)
+
+        # Get species/genome identifier for this sequence
+        if species_aware:
+            # Use main accession as species identifier (e.g., U00096 for all E. coli K-12 sequences)
+            species_id = seq.main_accession
+        else:
+            species_id = None
+
+        # Find all sequences similar to this one
+        for j, other_seq in enumerate(sequences):
+            if i == j or other_seq.id in clustered:
+                continue
+
+            # If species-aware, only cluster sequences from same species
+            if species_aware:
+                if other_seq.main_accession != species_id:
+                    continue  # Different species, skip
+
+            similarity = calculate_sequence_similarity(
+                seq.sequence.upper(),
+                other_seq.sequence.upper()
+            )
+
+            if similarity >= similarity_threshold:
+                cluster.append(other_seq)
+                clustered.add(other_seq.id)
+
+        clusters.append(cluster)
+
+    return clusters
+
+
+def smart_dereplicate(
+    sequences: List[Sequence],
+    remove_exact: bool = True,
+    similarity_threshold: float = 99.5,
+    selection_method: str = "longest",
+    species_aware: bool = True,
+    verbose: bool = False
+) -> Tuple[List[Sequence], Dict[str, any]]:
+    """
+    Smart multi-step deduplication:
+    1. Remove exact duplicates (100% identical sequences)
+    2. Cluster highly similar sequences (>= similarity_threshold%) from SAME species
+    3. Select one representative per cluster
+
+    This is the recommended deduplication approach for phylogenetic analysis.
+
+    Args:
+        sequences: List of sequences to dereplicate
+        remove_exact: Remove exact duplicates first (default True)
+        similarity_threshold: Cluster sequences with >= this similarity (default 99.5%)
+        selection_method: How to pick representative ("longest", "first", "median")
+        species_aware: Only cluster sequences from same species (default True, RECOMMENDED)
+        verbose: Print deduplication statistics
+
+    Returns:
+        Tuple of:
+        - List of dereplicated sequences
+        - Dictionary with statistics:
+            - "original_count": Original number of sequences
+            - "exact_duplicates_removed": Number of exact duplicates removed
+            - "clusters_formed": Number of similarity clusters
+            - "final_count": Final number of sequences
+            - "reduction_percentage": Percentage of sequences removed
+
+    Example:
+        >>> seqs = [sequences from same species with multiple rRNA copies]
+        >>> derep_seqs, stats = smart_dereplicate(seqs, verbose=True)
+        >>> print(f"Reduced from {stats['original_count']} to {stats['final_count']} sequences")
+    """
+    stats = {
+        "original_count": len(sequences),
+        "exact_duplicates_removed": 0,
+        "clusters_formed": 0,
+        "final_count": 0,
+        "reduction_percentage": 0.0
+    }
+
+    if not sequences:
+        return [], stats
+
+    working_seqs = sequences
+
+    # Step 1: Remove exact duplicates
+    if remove_exact:
+        unique_seqs, dup_map = remove_exact_duplicates(working_seqs)
+        num_exact_dups = len(working_seqs) - len(unique_seqs)
+        stats["exact_duplicates_removed"] = num_exact_dups
+
+        if verbose and num_exact_dups > 0:
+            print(f"  Removed {num_exact_dups} exact duplicate(s)")
+            print(f"  {len(unique_seqs)} unique sequences remain")
+
+        working_seqs = unique_seqs
+
+    # Step 2: Cluster by similarity (species-aware)
+    clusters = cluster_similar_sequences(working_seqs, similarity_threshold, species_aware=species_aware)
+    stats["clusters_formed"] = len(clusters)
+
+    if verbose:
+        print(f"  Formed {len(clusters)} cluster(s) at {similarity_threshold}% similarity")
+        multi_seq_clusters = [c for c in clusters if len(c) > 1]
+        if multi_seq_clusters:
+            print(f"  {len(multi_seq_clusters)} cluster(s) contain multiple sequences:")
+            for i, cluster in enumerate(multi_seq_clusters[:5]):  # Show first 5
+                print(f"    Cluster {i+1}: {len(cluster)} sequences")
+
+    # Step 3: Select representatives
+    representatives = []
+    for cluster in clusters:
+        rep = select_representative(cluster, method=selection_method)
+        representatives.append(rep)
+
+    stats["final_count"] = len(representatives)
+    stats["reduction_percentage"] = ((stats["original_count"] - stats["final_count"]) / stats["original_count"]) * 100
+
+    if verbose:
+        print(f"  Final: {stats['final_count']} representative sequences")
+        print(f"  Reduced by {stats['reduction_percentage']:.1f}%")
+
+    return representatives, stats
 
 
 if __name__ == "__main__":

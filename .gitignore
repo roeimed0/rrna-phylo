@@ -208,3 +208,9 @@ __marimo__/
 
 # Claude Code hooks node_modules
 .claude/hooks/node_modules/
+
+# rRNA-Phylo temporary test outputs
+backend/test_*_output/
+backend/test_viz*/
+backend/test_rect*/
+backend/aligned_*.fasta

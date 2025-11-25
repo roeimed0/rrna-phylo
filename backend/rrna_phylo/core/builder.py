@@ -19,7 +19,7 @@ from rrna_phylo.distance.distance import calculate_distance_matrix
 from rrna_phylo.distance.protein_distance import calculate_protein_distance_matrix
 from rrna_phylo.models.ml_tree_level4 import build_ml_tree_level4
 from rrna_phylo.methods.protein_ml import build_protein_ml_tree
-from rrna_phylo.consensus import majority_rule_consensus, compare_trees
+from rrna_phylo.consensus import compare_trees
 
 
 class PhylogeneticTreeBuilder:
@@ -130,6 +130,21 @@ class PhylogeneticTreeBuilder:
 
         return self.seq_type
 
+    def _calculate_distance_matrix(self, sequences: List[Sequence]):
+        """
+        Calculate distance matrix using appropriate model for sequence type.
+
+        Args:
+            sequences: Aligned sequences
+
+        Returns:
+            Tuple of (distance_matrix, sequence_ids)
+        """
+        if self.seq_type == SequenceType.PROTEIN:
+            return calculate_protein_distance_matrix(sequences, model="poisson")
+        else:
+            return calculate_distance_matrix(sequences, model="jukes-cantor")
+
     def build_upgma_tree(self, sequences: List[Sequence]) -> TreeNode:
         """
         Build UPGMA tree.
@@ -150,12 +165,8 @@ class PhylogeneticTreeBuilder:
             print("METHOD 1: UPGMA (Assumes Molecular Clock)")
             print("=" * 70)
 
-        # Use appropriate distance model
-        if self.seq_type == SequenceType.PROTEIN:
-            dist_matrix, ids = calculate_protein_distance_matrix(sequences, model="poisson")
-        else:
-            dist_matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")
-
+        # Calculate distance matrix
+        dist_matrix, ids = self._calculate_distance_matrix(sequences)
         tree = build_upgma_tree(dist_matrix, ids)
 
         if self.verbose:
@@ -184,12 +195,8 @@ class PhylogeneticTreeBuilder:
             print("METHOD 2: BioNJ (Variance-Weighted, No Clock Assumption)")
             print("=" * 70)
 
-        # Use appropriate distance model
-        if self.seq_type == SequenceType.PROTEIN:
-            dist_matrix, ids = calculate_protein_distance_matrix(sequences, model="poisson")
-        else:
-            dist_matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")
-
+        # Calculate distance matrix
+        dist_matrix, ids = self._calculate_distance_matrix(sequences)
         tree = build_bionj_tree(dist_matrix, ids)
 
         if self.verbose:

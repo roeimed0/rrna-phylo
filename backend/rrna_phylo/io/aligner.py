@@ -62,4 +62,17 @@ class MuscleAligner:
 
         aligned = self.align(tmp_path, output_file)
         os.remove(tmp_path)
+
+        # Preserve unique display names from original sequences
+        # Create a mapping from id to unique_display_name
+        id_to_unique_name = {}
+        for seq in sequences:
+            if hasattr(seq, '_unique_display_name') and seq._unique_display_name:
+                id_to_unique_name[seq.id] = seq._unique_display_name
+
+        # Apply unique names to aligned sequences
+        for aligned_seq in aligned:
+            if aligned_seq.id in id_to_unique_name:
+                aligned_seq._unique_display_name = id_to_unique_name[aligned_seq.id]
+
         return aligned

@@ -133,7 +133,7 @@ class DistanceCalculator:
 
         # Initialize matrix
         matrix = np.zeros((n, n))
-        ids = [seq.id for seq in sequences]
+        ids = [seq.display_name for seq in sequences]
 
         # Calculate pairwise distances
         for i in range(n):

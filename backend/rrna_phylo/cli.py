@@ -12,7 +12,7 @@ from typing import Optional
 from rrna_phylo import build_trees, FastaParser, Sequence
 from rrna_phylo.utils import print_tree_ascii
 from rrna_phylo.utils.bootstrap import bootstrap_tree
-from rrna_phylo.utils.strain_handler import dereplicate_strains, get_strain_summary
+from rrna_phylo.utils.strain_handler import dereplicate_strains, get_strain_summary, remove_exact_duplicates, smart_dereplicate
 from rrna_phylo.utils.outgroup_handler import get_outgroup_sequences, suggest_outgroup
 from rrna_phylo.utils.sampling_strategy import (
     stratified_sample,
@@ -27,11 +27,16 @@ from rrna_phylo.io.aligner import MuscleAligner
 
 
 def tree_to_newick(node, include_distances=True, include_support=True):
-    """Convert tree to Newick format."""
+    """Convert tree to Newick format with proper quoting for names with spaces."""
     if node.is_leaf():
+        # Quote name if it contains spaces or special characters
+        name = node.name
+        if ' ' in name or '(' in name or ')' in name:
+            name = f"'{name}'"
+
         if include_distances and hasattr(node, 'distance') and node.distance is not None:
-            return f"{node.name}:{node.distance:.6f}"
-        return node.name
+            return f"{name}:{node.distance:.6f}"
+        return name
 
     left_newick = tree_to_newick(node.left, include_distances, include_support)
     right_newick = tree_to_newick(node.right, include_distances, include_support)
@@ -157,7 +162,7 @@ For more information, visit: https://github.com/your-repo/rrna-phylo
     parser.add_argument(
         '--dereplicate',
         action='store_true',
-        help='Remove duplicate rRNA copies from same genome (recommended for multi-strain analysis)'
+        help='Smart deduplication: cluster highly similar sequences (>=99.5%%) and keep one representative per cluster (exact duplicates are always removed)'
     )
 
     parser.add_argument(
@@ -214,6 +219,63 @@ For more information, visit: https://github.com/your-repo/rrna-phylo
         help='Proceed with tree building even if database bias is detected (not recommended)'
     )
 
+    # Visualization options
+    parser.add_argument(
+        '--visualize',
+        action='store_true',
+        help='Generate publication-quality tree visualization (requires ETE3)'
+    )
+
+
+    parser.add_argument(
+        '--viz-format',
+        type=str,
+        choices=['png', 'pdf', 'svg', 'eps'],
+        default='pdf',
+        help='Visualization output format (default: pdf for publication quality)'
+    )
+
+    parser.add_argument(
+        '--viz-dpi',
+        type=int,
+        default=300,
+        help='Resolution for PNG output in DPI (default: 300, use 600 for publication)'
+    )
+
+    parser.add_argument(
+        '--viz-width',
+        type=int,
+        help='Visualization width in pixels (optional, auto if not set)'
+    )
+
+    parser.add_argument(
+        '--viz-height',
+        type=int,
+        help='Visualization height in pixels (optional, auto if not set)'
+    )
+
+    parser.add_argument(
+        '--viz-bootstrap-threshold',
+        type=float,
+        default=70.0,
+        help='Bootstrap value threshold for coloring (default: 70.0)'
+    )
+
+    parser.add_argument(
+        '--viz-branch-width',
+        type=float,
+        default=1.5,
+        help='Branch line thickness in pixels (default: 1.5)'
+    )
+
+    parser.add_argument(
+        '--viz-scale',
+        type=int,
+        default=120,
+        help='Branch length scale in pixels per unit (default: 120, higher = longer branches)'
+    )
+
+
     args = parser.parse_args()
 
     # Validate input file
@@ -237,8 +299,20 @@ For more information, visit: https://github.com/your-repo/rrna-phylo
         parser_obj = FastaParser()
         sequences = parser_obj.parse(str(input_path))
 
+        # Assign unique display names with counters for duplicates
+        from rrna_phylo.io.fasta_parser import assign_unique_display_names
+        assign_unique_display_names(sequences)
+
+        # ALWAYS remove exact duplicates (100% identical sequences)
+        # This is scientifically sound - identical sequences provide no additional information
+        original_count = len(sequences)
+        sequences, dup_map = remove_exact_duplicates(sequences)
+        num_exact_dups = original_count - len(sequences)
+
         if not args.quiet:
-            print(f"  Loaded {len(sequences)} sequences")
+            print(f"  Loaded {original_count} sequences")
+            if num_exact_dups > 0:
+                print(f"  Removed {num_exact_dups} exact duplicate(s) -> {len(sequences)} unique sequences")
 
             # Detect type
             if sequences[0].is_nucleotide():
@@ -344,23 +418,21 @@ For more information, visit: https://github.com/your-repo/rrna-phylo
 
         sequences = sampled
 
-    # Dereplicate sequences if requested
+    # Smart deduplication if requested
+    # Note: Exact duplicates are already removed above (always enabled)
     if args.dereplicate:
         if not args.quiet:
             print("\n" + "-" * 70)
-            print("Dereplicating sequences (removing multiple copies from same genome)...")
+            print("Smart Deduplication: Clustering Similar Sequences")
             print("-" * 70)
-            print(get_strain_summary(sequences))
 
-        dereplicated, strain_mapping = dereplicate_strains(
+        dereplicated, stats = smart_dereplicate(
             sequences,
-            method=args.derep_method,
-            selection="longest"
+            remove_exact=False,  # Already done above
+            similarity_threshold=99.5,
+            selection_method="longest",
+            verbose=(not args.quiet)
         )
-
-        if not args.quiet:
-            print(f"\nDereplicated: {len(sequences)} -> {len(dereplicated)} sequences")
-            print(f"  (Kept 1 {'representative' if args.derep_method == 'representative' else 'consensus'} per strain)")
 
         sequences = dereplicated
 
@@ -545,6 +617,53 @@ For more information, visit: https://github.com/your-repo/rrna-phylo
             if not args.quiet:
                 print(f"\nExported {method_name.upper()} tree to: {output_file}")
 
+        # ETE3 visualization
+        if args.visualize and args.output_format in ['newick', 'both']:
+            try:
+                from rrna_phylo.visualization import visualize_tree, ETE3_AVAILABLE
+
+                if not ETE3_AVAILABLE:
+                    if not args.quiet:
+                        print("\n[!] Warning: ETE3 not installed. Skipping visualization.")
+                        print("    Install with: pip install ete3")
+                else:
+                    # Get the Newick file path
+                    newick_file = output_dir / f"{args.prefix}_{method_name}.nwk"
+
+                    # Determine visualization output file
+                    viz_file = output_dir / f"{args.prefix}_{method_name}_tree.{args.viz_format}"
+
+                    if not args.quiet:
+                        print(f"\n  Generating tree visualization...")
+                        print(f"  Output: {viz_file}")
+
+                    # Generate visualization
+                    visualize_tree(
+                        str(newick_file),
+                        str(viz_file),
+                        show_bootstrap=(args.bootstrap > 0),
+                        bootstrap_threshold=args.viz_bootstrap_threshold,
+                        width=args.viz_width,
+                        height=args.viz_height,
+                        dpi=args.viz_dpi,
+                        title=f"{method_name.upper()} Tree",
+                        branch_line_width=args.viz_branch_width,
+                        scale=args.viz_scale
+                    )
+
+                    output_files.append(str(viz_file))
+
+                    if not args.quiet:
+                        print(f"  Visualization saved: {viz_file}")
+
+            except ImportError as e:
+                if not args.quiet:
+                    print(f"\n[!] Warning: Could not import ETE3. {e}")
+                    print("    Install with: pip install ete3")
+            except Exception as e:
+                if not args.quiet:
+                    print(f"\n[!] Warning: Visualization failed: {e}")
+
     # Summary
     if not args.quiet:
         print("\n" + "=" * 70)
@@ -555,7 +674,10 @@ For more information, visit: https://github.com/your-repo/rrna-phylo
             print(f"Output files:")
             for f in output_files:
                 print(f"  - {f}")
-        print("\nTip: Use FigTree, iTOL, or Dendroscope to visualize Newick files")
+
+        if not args.visualize:
+            print("\nTip: Use --visualize to generate publication-quality figures with ETE3")
+            print("     Or use FigTree, iTOL, or Dendroscope to view Newick files")
 
     return 0
 

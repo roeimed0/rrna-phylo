@@ -52,8 +52,8 @@ class LikelihoodCalculator:
         # Convert sequences to numeric array
         self.alignment = self._prepare_alignment()
 
-        # Map sequence IDs to indices
-        self.seq_id_to_idx = {seq.id: i for i, seq in enumerate(sequences)}
+        # Map sequence display names to indices (for tree node lookup)
+        self.seq_id_to_idx = {seq.display_name: i for i, seq in enumerate(sequences)}
 
     def _prepare_alignment(self) -> np.ndarray:
         """Convert sequences to numeric alignment matrix."""

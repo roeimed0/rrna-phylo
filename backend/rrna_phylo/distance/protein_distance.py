@@ -187,7 +187,7 @@ class ProteinDistanceCalculator:
         """
         n = len(sequences)
         dist_matrix = np.zeros((n, n))
-        ids = [seq.id for seq in sequences]
+        ids = [seq.display_name for seq in sequences]
 
         for i in range(n):
             for j in range(i + 1, n):

@@ -54,24 +54,31 @@ class TreeNode:
         Convert tree to Newick format string.
 
         Newick format is the standard for representing phylogenetic trees:
-        - Leaves: name:distance
+        - Leaves: name:distance (quoted if name contains spaces/special chars)
         - Internal: (left,right):distance
-        - Example: ((A:0.1,B:0.2):0.3,C:0.4);
+        - Example: (('Species A':0.1,'Species B':0.2):0.3,'Species C':0.4);
 
         Returns:
             Newick format string (without trailing semicolon)
 
         Example:
-            >>> leaf = TreeNode("A", distance=0.1)
+            >>> leaf = TreeNode("Species name", distance=0.1)
             >>> leaf.to_newick()
-            'A:0.100000'
+            "'Species name':0.100000"
         """
         if self.is_leaf():
-            return f"{self.name}:{self.distance:.6f}"
+            # Quote name if it contains spaces or special characters
+            quoted_name = f"'{self.name}'" if (' ' in self.name or '(' in self.name or ')' in self.name) else self.name
+            return f"{quoted_name}:{self.distance:.6f}"
         else:
             left_str = self.left.to_newick()
             right_str = self.right.to_newick()
-            return f"({left_str},{right_str}):{self.distance:.6f}"
+            # Quote internal node name if present and contains spaces
+            if self.name:
+                quoted_name = f"'{self.name}'" if (' ' in self.name or '(' in self.name or ')' in self.name) else self.name
+                return f"({left_str},{right_str}){quoted_name}:{self.distance:.6f}"
+            else:
+                return f"({left_str},{right_str}):{self.distance:.6f}"
 
     def __repr__(self):
         """String representation for debugging."""

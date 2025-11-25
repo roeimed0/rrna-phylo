@@ -27,7 +27,7 @@ That's it! The CLI automatically:
 - ✅ Builds trees with all three methods
 - ✅ Exports Newick files + shows ASCII trees
 
-**See [CLI_USAGE.md](CLI_USAGE.md) for complete guide**
+**See [docs/user-guide/cli-usage.md](docs/user-guide/cli-usage.md) for complete guide**
 
 ### Option 2: Python API
 
@@ -50,7 +50,7 @@ print(f"Detected type: {results['type'].value}")
 print(f"Model used: {results['model']}")
 ```
 
-**See [API-USAGE.md](API-USAGE.md) for complete API reference**
+**See [docs/user-guide/api-usage.md](docs/user-guide/api-usage.md) for complete API reference**
 
 ---
 
@@ -228,6 +228,25 @@ print("ML:    ", results["ml"][0].to_newick())
 
 ---
 
+## Documentation
+
+### User Guides
+- [Usage Guide](docs/user-guide/usage-guide.md) - Complete user documentation
+- [CLI Usage](docs/user-guide/cli-usage.md) - Command-line interface reference
+- [API Usage](docs/user-guide/api-usage.md) - Python API examples
+
+### Development
+- [Architecture](docs/development/architecture.md) - System design and structure
+- [Performance](docs/development/performance.md) - Performance optimization details
+
+### Features
+- [Bootstrap Support](docs/features/bootstrap.md) - Bootstrap analysis implementation
+- [Database Bias Handling](docs/features/database-bias.md) - Handling taxonomic bias
+- [Auto Bias Detection](docs/features/auto-bias-detection.md) - Automatic bias detection
+- [Visualization](docs/features/visualization.md) - Publication-quality tree visualization
+
+---
+
 ## Testing
 
 ```bash
@@ -248,7 +267,7 @@ python visualize_trees.py
 
 ## Architecture
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design documentation.
+See [docs/development/architecture.md](docs/development/architecture.md) for detailed design documentation.
 
 ### Three-Path Design
 

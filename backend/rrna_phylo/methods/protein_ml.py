@@ -52,8 +52,8 @@ class ProteinLikelihoodCalculator:
         # Site pattern compression (adapted for proteins)
         self.compressor = ProteinPatternCompressor(sequences)
 
-        # Map sequence IDs to indices
-        self.seq_id_to_idx = {seq.id: i for i, seq in enumerate(sequences)}
+        # Map sequence display names to indices (for tree node lookup)
+        self.seq_id_to_idx = {seq.display_name: i for i, seq in enumerate(sequences)}
 
     def calculate_likelihood(self, tree: TreeNode) -> float:
         """

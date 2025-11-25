@@ -14,6 +14,7 @@ class Sequence:
     id: str
     description: str
     sequence: str
+    _unique_display_name: str = None  # Set by assign_unique_display_names()
 
     @property
     def length(self) -> int:
@@ -24,6 +25,75 @@ class Sequence:
     def aligned_length(self) -> int:
         """Return full length including gaps."""
         return len(self.sequence)
+
+    @property
+    def species_name(self) -> str:
+        """
+        Extract species name from description.
+
+        For taxonomy descriptions like "Bacteria;...;Genus;Species strain",
+        returns the last part (species + strain).
+
+        Returns:
+            Species name or empty string if not found
+        """
+        if not self.description:
+            return ""
+
+        # Handle taxonomy format (semicolon-separated)
+        if ';' in self.description:
+            parts = self.description.split(';')
+            # Last part is usually the species/strain
+            return parts[-1].strip()
+
+        # Handle space-separated format
+        # Take first two words as genus + species
+        words = self.description.split()
+        if len(words) >= 2:
+            return ' '.join(words[:2])
+        elif len(words) == 1:
+            return words[0]
+
+        return ""
+
+    @property
+    def main_accession(self) -> str:
+        """
+        Extract main accession number from ID.
+
+        For IDs like "AE006468.4100145.4101688", returns "AE006468"
+        For IDs like "U00096.223771.225312", returns "U00096"
+
+        Returns:
+            Main accession number (first part before dot)
+        """
+        if '.' in self.id:
+            return self.id.split('.')[0]
+        return self.id
+
+    @property
+    def display_name(self) -> str:
+        """
+        Get display name for tree visualization.
+
+        Returns species name with main accession in parentheses,
+        e.g., "Bacillus subtilis (AJ276351)"
+
+        If assign_unique_display_names() was called, returns the unique name
+        with counter (e.g., "Escherichia coli (U00096) #1")
+
+        Falls back to ID if no species name available.
+        """
+        # Return unique name if it was assigned
+        if self._unique_display_name:
+            return self._unique_display_name
+
+        # Otherwise generate default display name
+        species = self.species_name
+        if species:
+            return f"{species} ({self.main_accession})"
+        else:
+            return self.id
 
     def is_nucleotide(self) -> bool:
         """Check if sequence is nucleotide (DNA/RNA)."""
@@ -210,3 +280,48 @@ def parse_fasta(filepath: str) -> List[Sequence]:
     """
     parser = FastaParser()
     return parser.parse(filepath)
+
+
+def assign_unique_display_names(sequences: List[Sequence]) -> List[Sequence]:
+    """
+    Assign unique display names to sequences, adding counters for duplicates.
+
+    When multiple sequences have the same species name, adds #1, #2, etc.
+    to differentiate them in tree visualizations.
+
+    Args:
+        sequences: List of Sequence objects
+
+    Returns:
+        Same list of sequences (modified in place)
+
+    Example:
+        >>> seqs = parse_fasta("sequences.fasta")
+        >>> assign_unique_display_names(seqs)
+        # Now seqs will have unique display names like:
+        # "Escherichia coli (U00096) #1"
+        # "Escherichia coli (U00096) #2"
+    """
+    # Count occurrences of each species name
+    species_counts = {}
+    species_current = {}
+
+    for seq in sequences:
+        base_name = seq.display_name
+        species_counts[base_name] = species_counts.get(base_name, 0) + 1
+
+    # Add counters only if there are duplicates
+    for seq in sequences:
+        base_name = seq.display_name
+
+        if species_counts[base_name] > 1:
+            # Multiple sequences with same species name
+            counter = species_current.get(base_name, 0) + 1
+            species_current[base_name] = counter
+            # Override the display name with a counter
+            seq._unique_display_name = f"{base_name} #{counter}"
+        else:
+            # Unique species name, no counter needed
+            seq._unique_display_name = base_name
+
+    return sequences

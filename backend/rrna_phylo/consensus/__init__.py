@@ -20,10 +20,6 @@ from rrna_phylo.consensus.bipartitions import (
     are_compatible,
     get_taxa_from_trees
 )
-from rrna_phylo.consensus.consensus import (
-    majority_rule_consensus,
-    strict_consensus
-)
 
 __all__ = [
     # Tree distance metrics
@@ -37,8 +33,4 @@ __all__ = [
     "get_informative_bipartitions",
     "are_compatible",
     "get_taxa_from_trees",
-
-    # Consensus methods
-    "majority_rule_consensus",
-    "strict_consensus",
 ]
