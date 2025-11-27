@@ -49,7 +49,7 @@ class TreeNode:
         """
         return self.left is None and self.right is None
 
-    def to_newick(self) -> str:
+    def to_newick(self, include_internal_names: bool = False) -> str:
         """
         Convert tree to Newick format string.
 
@@ -57,6 +57,10 @@ class TreeNode:
         - Leaves: name:distance (quoted if name contains spaces/special chars)
         - Internal: (left,right):distance
         - Example: (('Species A':0.1,'Species B':0.2):0.3,'Species C':0.4);
+
+        Args:
+            include_internal_names: Include internal node names (default: False)
+                Note: Internal node names with quotes can cause parsing issues in some tools
 
         Returns:
             Newick format string (without trailing semicolon)
@@ -71,10 +75,10 @@ class TreeNode:
             quoted_name = f"'{self.name}'" if (' ' in self.name or '(' in self.name or ')' in self.name) else self.name
             return f"{quoted_name}:{self.distance:.6f}"
         else:
-            left_str = self.left.to_newick()
-            right_str = self.right.to_newick()
-            # Quote internal node name if present and contains spaces
-            if self.name:
+            left_str = self.left.to_newick(include_internal_names=include_internal_names)
+            right_str = self.right.to_newick(include_internal_names=include_internal_names)
+            # Only include internal node name if requested and present
+            if include_internal_names and self.name:
                 quoted_name = f"'{self.name}'" if (' ' in self.name or '(' in self.name or ')' in self.name) else self.name
                 return f"({left_str},{right_str}){quoted_name}:{self.distance:.6f}"
             else:

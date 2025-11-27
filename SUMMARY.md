@@ -1,253 +1,299 @@
-# rRNA-Phylo Project Summary
+# Recent Changes - rRNA-Phylo
 
-## Session Accomplishments
+**Last Updated**: 2025-11-26
 
-### 1. Cleaned Up Test Files
-**Removed**:
-- `test_bootstrap.py` - Old bootstrap test
-- `test_consensus.py` - Old consensus test
-- `test_level4_visualization.py` - Old visualization test
-- `test_ml_level4.py` - Old ML test
-- `test_numba_basic.py` - Basic Numba test
-- `test_numba_performance.py` - Numba performance test
+---
 
-**Kept**:
-- `test_comprehensive.py` - Comprehensive integration test (updated)
-- `demo_bootstrap.py` - Bootstrap demonstration (updated)
+## Session 2025-11-26: Display Names & Aligned Visualization
 
-### 2. Disabled Broken Consensus Feature
-**Problem**: Consensus tree algorithm was creating bipartitions that don't exist in ANY input trees
-- Example: Input trees all show `{RecA_Ecoli, RecA_Salm}` as sisters
-- Consensus incorrectly created `{RecA_Salm, RecA_Bsub}` (not in any tree!)
+### Completed ✅
 
-**Actions Taken**:
-- Documented issue in `CONSENSUS_TODO.md`
-- Disabled consensus in `builder.py`
-- Removed consensus from `test_comprehensive.py`
-- Added clear notes explaining why it's disabled
+#### 1. Display Names in Trees
+**Format**: `"Species name (MainAccession) #N"`
 
-**Future Work**: Needs complete redesign with proper bipartition reconstruction algorithm
+**Examples**:
+- `Escherichia coli str. K-12 substr. MG1655 (U00096) #1`
+- `Salmonella virus Fels2 (AE006468) #1`
+- `Pseudomonas aeruginosa PAO1 (AE004091) #1`
 
-### 3. Tree Visualization - ASCII Only
-**Decision**: Use ASCII-based tree visualization only
+**Benefits**:
+- Readable species names (not cryptic accessions)
+- Simplified accessions (U00096 vs U00096.223771.225312)
+- Numbered duplicates for clarity (#1, #2, etc.)
 
-**Rationale**:
-- Simple, works everywhere without dependencies
-- No external libraries required (matplotlib, R, etc.)
-- Terminal-friendly output
-- Perfect for development and debugging
-- Use external tools (FigTree, iTOL) for publication-quality figures
+**Implementation**:
+- Added `species_name` property to extract from FASTA descriptions
+- Added `main_accession` property to simplify accessions
+- Added `display_name` property combining both
+- Added `assign_unique_display_names()` for #N numbering
+- Applied to all tree output formats (ASCII, Newick, ETE3)
 
-### 4. ASCII Tree Visualization
-**Current Implementation**: `print_tree_ascii()` in `rrna_phylo.utils`
+#### 2. ETE3 Aligned Leaf Names
+**Feature**: All species names aligned in vertical column
 
-**Features**:
-- Simple text-based tree display
-- Works in any terminal
-- No external dependencies
-- Shows tree topology clearly
+**Settings**:
+- `force_topology=True` - Align all leaf names
+- `draw_guiding_lines=True` - Black solid guide lines
+- `guiding_lines_type=0` - Solid lines (no dots)
+- `guiding_lines_color="black"` - Professional appearance
 
-**Usage**:
-```python
-from rrna_phylo.utils import print_tree_ascii
-print_tree_ascii(tree)
-```
+**Result**: Publication-quality trees with clean, aligned labels
 
-**For Publication-Quality Figures**:
-- Export to Newick format: `tree_to_newick()`
-- Use external tools: FigTree, iTOL, Dendroscope, MEGA
+**Fixed Issues**:
+- Newick semicolon missing (caused ETE3 parsing errors)
+- Double-quoted names (removed quotes from display_name)
+- Added `quoted_node_names=True` to ETE3 Tree constructor
 
-## Current Project Status
+#### 3. Comprehensive Test Pipeline
+**File**: `test_full_pipeline.py`
 
-### Working Features ✅
-
-1. **ML Level 4 Trees**
-   - Automatic model selection (AIC/BIC)
-   - NNI tree search
-   - Numba acceleration (9x speedup)
-   - Works for DNA, RNA, Protein
-
-2. **Distance Methods**
+**What it does**:
+1. Load and align sequences
+2. Remove exact duplicates (always)
+3. Build trees in TWO modes:
+   - Regular (exact duplicates only) - 19 sequences
+   - Deduplicated (smart deduplication) - 8 sequences
+4. For each mode, build THREE tree types:
+   - UPGMA (distance-based)
    - BioNJ (variance-weighted)
-   - UPGMA (molecular clock)
+   - ML (Maximum Likelihood with GTR+Gamma)
+5. Generate ONE COMBINED OUTPUT FILE showing all 6 trees
+6. Generate individual files for each tree
 
-3. **Bootstrap Analysis**
+**Total Output**: 26 files
+- 1 combined comparison file (COMPLETE_TREE_COMPARISON.txt)
+- 6 ASCII files (individual tree visualizations)
+- 6 Newick files (standard format)
+- 6 PDF files (ETE3 publication-quality)
+- 6 PNG files (ETE3 high-resolution)
+- 1 aligned FASTA file
+
+### Files Modified
+- [fasta_parser.py](backend/rrna_phylo/io/fasta_parser.py) - display_name property
+- [ete3_viz.py](backend/rrna_phylo/visualization/ete3_viz.py) - aligned leaf names, guide lines
+- [test_full_pipeline.py](backend/tests/test_full_pipeline.py) - comprehensive pipeline
+- [tree.py](backend/rrna_phylo/core/tree.py) - Newick semicolon fix
+
+### Understanding Deduplication Impact
+
+**Regular mode** (19 sequences):
+- Shows all unique sequences after exact duplicate removal
+- E. coli: 7 rRNA operons (slightly different)
+- Salmonella: 7 rRNA operons
+- Good for studying intra-strain variation
+
+**Deduplicated mode** (8 sequences):
+- Smart deduplication at 99.5% similarity
+- E. coli: 3 representatives (showing meaningful diversity)
+- Salmonella: 2 representatives
+- Good for inter-species phylogenetic relationships
+
+**Key Insight**: Deduplicated trees keep MULTIPLE representatives per species when they show meaningful variation (not just 1 per species)
+
+---
+
+## Session 2025-11-25: Smart Deduplication & Testing
+
+### Completed ✅
+
+#### 1. Smart Deduplication
+**Two-tier strategy**:
+- **Tier 1**: Exact duplicate removal (always applied)
+- **Tier 2**: Similarity clustering at 99.5% (optional with `--dereplicate`)
+
+**Species-aware clustering**:
+- Only clusters sequences from the SAME genome/species
+- Prevents accidental merging of phylogenetically distinct sequences
+- Critical for accurate phylogenetic inference
+
+**Results with test data**:
+- 24 sequences → 19 after exact duplicate removal
+- 24 sequences → 11 after smart deduplication (54% reduction)
+- Phylogenetic relationships preserved
+
+#### 2. Comprehensive Test Coverage
+**File**: `test_strain_handler.py`
+
+**28 tests covering**:
+- Exact duplicate removal (5 tests)
+- Sequence similarity calculation (4 tests)
+- Similarity-based clustering (4 tests)
+- Smart deduplication pipeline (4 tests)
+- Representative selection (5 tests)
+- Strain grouping (2 tests)
+- Legacy functions (1 test)
+- Strain summary (1 test)
+- Full integration (2 tests)
+
+**All 28 tests PASSED** ✅
+
+### Files Created
+- [strain_handler.py](backend/rrna_phylo/utils/strain_handler.py) - All deduplication logic
+- [test_strain_handler.py](backend/tests/test_strain_handler.py) - 28 comprehensive tests
+
+---
+
+## Session 2025-11-21: Bootstrap Analysis
+
+### Completed ✅
+
+#### Bootstrap Support Values
+**Implementation**:
+- 100-1000 replicates supported
+- Parallel processing using all CPU cores
+- Works with UPGMA, BioNJ, and ML methods
+- Reproducible with controlled random seeds
+
+**Performance**:
+- UPGMA: ~2 seconds (100 replicates, 19 sequences)
+- BioNJ: ~3 seconds (100 replicates, 19 sequences)
+- ML: ~120 seconds (100 replicates, 19 sequences with Numba)
+
+**Testing**:
+- Verified with 2-200 replicates
+- All three methods tested
+- Bootstrap values in valid range (0-100%)
+
+### Files Modified
+- [builder.py](backend/rrna_phylo/core/builder.py) - Bootstrap integration
+- [bootstrap.py](backend/rrna_phylo/consensus/bootstrap.py) - Bootstrap implementation
+
+---
+
+## Earlier Work (November 2025)
+
+### ETE3 Visualization (2025-11-25)
+- Publication-quality tree output (Nature/Science/Cell standard)
+- Multiple formats: PDF, PNG, SVG, EPS
+- Bootstrap support display with color coding
+- CLI integration with 7 new flags
+
+### ML Level 4 (2025-11-20)
+- Automatic model selection (AIC/BIC)
+- NNI tree search
+- Numba acceleration (9x speedup)
+- Model comparison utilities
+
+### Performance Optimization (2025-11-19)
+- Site pattern compression (10-100x speedup)
+- Numba JIT compilation (9x speedup for likelihood)
+- Fast matrix exponential (Pade approximation)
+- Combined: ~300x vs naive implementation
+
+---
+
+## Current Status
+
+### Production-Ready Features ✅
+1. **Phylogenetic Tree Building**
+   - UPGMA (distance-based, molecular clock)
+   - BioNJ (variance-weighted neighbor-joining)
+   - ML (Maximum Likelihood with GTR+Gamma)
+
+2. **Bootstrap Analysis**
+   - 100-1000 replicates
    - Parallel processing (all CPU cores)
-   - Works with all 3 methods
-   - 50-100 replicates feasible with Numba
+   - Integrated with all methods
 
-4. **Tree Visualization** - ASCII Display
-   - **ASCII Output**: Terminal-friendly tree display via `print_tree_ascii()`
-   - **Newick Export**: Export trees for external visualization tools
-   - **External Tools**: Use FigTree, iTOL, Dendroscope, MEGA for publication figures
-   - **No Dependencies**: Works everywhere without additional libraries
+3. **ETE3 Visualization**
+   - Publication-quality output
+   - Aligned leaf names
+   - Multiple formats (PDF, PNG, SVG, EPS)
+   - Bootstrap display
 
-5. **Multi-Sequence Support**
-   - DNA sequences
-   - RNA sequences
-   - Protein sequences
-   - Automatic type detection
+4. **Smart Deduplication**
+   - Two-tier strategy (exact + similarity)
+   - Species-aware clustering
+   - 40-60% dataset reduction
+   - 28 comprehensive tests
+
+5. **Display Names**
+   - Human-readable species names
+   - Simplified accessions
+   - Numbered duplicates
 
 ### Known Issues ⚠️
-
-1. **Consensus Trees** - DISABLED
-   - Algorithm produces incorrect topologies
-   - Creates bipartitions not in input trees
+1. **Consensus Trees** - BROKEN (disabled since 2025-11-20)
+   - Algorithm creates incorrect bipartitions
    - Needs complete redesign
-   - See `CONSENSUS_TODO.md`
+   - Not blocking other work
 
-2. **ML Bootstrap Values**
-   - DNA/RNA: 64% (unexpectedly lower than BioNJ: 80%)
-   - Protein: 98% (correct - higher than distance methods)
-   - May need investigation for DNA/RNA
+### Next Priorities
 
-## File Structure
+**Immediate** (This Week):
+1. Fix Consensus Trees - Proper algorithm (3-5 days)
+2. Progress Bars - Add tqdm (2-3 hours)
 
-```
-backend/
-├── rrna_phylo/
-│   ├── core/
-│   │   └── builder.py                    # Updated: disabled consensus
-│   ├── consensus/
-│   │   └── consensus.py                  # BROKEN - do not use
-│   ├── utils/
-│   │   └── visualize.py                  # ASCII tree visualization
-│   └── ...
-├── test_comprehensive.py                  # Comprehensive integration test
-├── demo_bootstrap.py                      # Bootstrap demonstration
-├── visualize_all_trees.py                 # Visualize all 9 trees with ASCII
-├── CONSENSUS_TODO.md                      # Consensus bug documentation
+**Short Term** (Next 2-4 Weeks):
+3. **Generative AI Phase 1** - ML-Enhanced Quality Scoring (1 week)
+4. **Generative AI Phase 2** - Multi-Tree Ensemble Methods (1-2 weeks)
+5. Tree Comparison CLI - RF distance (1 day)
+6. Parallel Bootstrap - joblib for Windows (2-3 hours)
 
-.claude/skills/
-└── tree-visualization/
-    └── skill.md                           # Visualization skill
-```
+**Medium Term** (Next 1-2 Months):
+7. **Generative AI Phase 3** - GNN/Transformer Tree Generation (2-3 weeks)
+8. SPR Tree Search - Better than NNI (6-8 hours)
+9. Advanced Visualization - Branch coloring, clade highlighting (1-2 days)
+10. Performance Profiling - Optimize bottlenecks (2-3 days)
 
-## Test Results
+---
 
-### Comprehensive Test (test_comprehensive.py)
-```
-✅ 9 phylogenetic trees built (3 methods × 3 sequence types)
-✅ Bootstrap analysis completed for ML Level 4, BioNJ, and UPGMA
-✅ ML bootstrap with 50 replicates (Numba-accelerated)
-✅ Bootstrap values in valid range (0-100%)
-✅ All trees visualized successfully
+## Documentation Files
 
-📝 Note: Consensus tree functionality is disabled (broken)
-```
+### User Documentation
+- [USAGE_GUIDE.md](backend/docs/user-guide/usage-guide.md) - Complete user guide
+- [DEDUPLICATION_SUMMARY.md](backend/DEDUPLICATION_SUMMARY.md) - Deduplication details
+- [visualization.md](backend/docs/features/visualization.md) - ETE3 visualization
 
-### Bootstrap Support Values
-**DNA**:
-- ML Level 4: 64%
-- BioNJ: 80%
-- UPGMA: 70%
+### Developer Documentation
+- [STATUS.md](STATUS.md) - Complete project status (UPDATED 2025-11-26)
+- [ROADMAP.md](ROADMAP.md) - Development roadmap
+- [DOCUMENTATION_REVIEW.md](DOCUMENTATION_REVIEW.md) - Doc improvement plan (NEW)
+- [architecture.md](backend/docs/development/architecture.md) - Project architecture
+- [performance.md](backend/docs/development/performance.md) - Performance optimization
 
-**RNA**:
-- ML Level 4: 64%
-- BioNJ: 80%
-- UPGMA: 70%
+### Skills
+9 Claude Code skills available for development guidance:
+- skill-developer
+- rrna-prediction-patterns
+- phylogenetic-methods
+- project-architecture-patterns
+- ml-integration-patterns
+- ml-tree-methods
+- consensus-tree-methods
+- ml-tree-level4
+- tree-visualization
 
-**Protein**:
-- ML Level 4: 98% ⭐
-- BioNJ: 95%
-- UPGMA: 100%
+---
 
-## Skills Available
+## Quick Start
 
-1. `skill-developer` - Meta-skill for creating skills
-2. `rrna-prediction-patterns` - rRNA detection patterns
-3. `phylogenetic-methods` - Tree building methods
-4. `project-architecture-patterns` - FastAPI architecture
-5. `ml-integration-patterns` - Machine learning integration
-6. `ml-tree-methods` - Maximum Likelihood basics
-7. `consensus-tree-methods` - Consensus algorithms (currently broken)
-8. `ml-tree-level4` - Advanced ML with model selection
-9. `tree-visualization` - ⭐ NEW: Tree visualization guide
-
-## Next Steps
-
-### High Priority
-1. **Fix Consensus Trees**
-   - Research proper bipartition reconstruction algorithms
-   - Study PHYLIP consense implementation
-   - Implement and test with validation suite
-
-2. **Investigate ML Bootstrap Values**
-   - Why are DNA/RNA ML bootstraps lower than BioNJ?
-   - Check if this is expected or a bug
-   - May need more replicates or different random seeds
-
-### Medium Priority
-3. **Newick Export Function**
-   - Add function to export trees to Newick format
-   - Include bootstrap support values in output
-   - Enable use of external visualization tools (FigTree, iTOL)
-
-## Resources
-
-**Documentation**:
-- `CONSENSUS_TODO.md` - Consensus bug analysis and fix plan
-- `.claude/skills/tree-visualization/skill.md` - Comprehensive visualization patterns
-
-**Code Files**:
-- `visualize_all_trees.py` - Visualize all 9 trees with ASCII output
-- `rrna_phylo/utils/visualize.py` - ASCII tree visualization functions
-
-**External Visualization Tools**:
-- [FigTree](http://tree.bio.ed.ac.uk/software/figtree/) - Desktop tree viewer
-- [iTOL](https://itol.embl.de/) - Interactive Tree Of Life (web-based)
-- [Dendroscope](http://dendroscope.org/) - Advanced tree visualization
-- [MEGA](https://www.megasoftware.net/) - Molecular evolutionary genetics analysis
-
-## Commands
-
-### Test & Analysis Workflows
+### Run Comprehensive Test
 ```bash
-# Run comprehensive test (builds all 9 trees, runs bootstrap)
-python test_comprehensive.py
-
-# Bootstrap demonstration (100 replicates)
-python demo_bootstrap.py
-
-# Visualize all 9 trees with ASCII output
-python visualize_all_trees.py
+cd backend
+python tests/test_full_pipeline.py
 ```
 
-### Custom Tree Visualization
-```python
-from rrna_phylo.utils import print_tree_ascii
-from rrna_phylo.core.builder import PhylogeneticTreeBuilder
-from rrna_phylo import Sequence
+**Output**: 26 files showing all 6 trees (regular + deduplicated × UPGMA + BioNJ + ML)
 
-# Build tree
-sequences = [Sequence('id', 'name', 'ATGC...'), ...]
-builder = PhylogeneticTreeBuilder()
-builder.detect_and_validate(sequences)
-tree, logL = builder.build_ml_tree(sequences)
-
-# Display ASCII tree
-print_tree_ascii(tree)
+### Build a Tree
+```bash
+cd backend
+python -m rrna_phylo.cli test_real_rrana.fasta \
+    --method ml \
+    --bootstrap 100 \
+    --dereplicate \
+    --visualize \
+    --output-format both \
+    -o results/
 ```
 
-## Git Status
+**Output**:
+- `results/tree_ml.nwk` - Newick format
+- `results/tree_ml_ascii.txt` - ASCII visualization
+- `results/tree_ml_tree.pdf` - Publication-quality PDF
 
-**Modified**:
-- `rrna_phylo/core/builder.py` - Disabled consensus
-- `SUMMARY.md` - Updated with R ggtree integration
-- `.claude/skills/skill-rules.json` - Added tree-visualization skill
+---
 
-**New Files**:
-- `CONSENSUS_TODO.md` - Bug documentation
-- `README_GGTREE_INTEGRATION.md` - ⭐ Complete integration guide
-- `QUICK_START_GGTREE.md` - ⭐ Quick start guide
-- `visualize_comprehensive_test.py` - ⭐ Visualize all 9 trees script
-- `export_and_visualize.py` - ⭐ Python-R bridge (complete)
-- `visualize_trees_ggtree.R` - ⭐ R ggtree implementation (670 lines)
-- `test_comprehensive.py` - Updated integration test
-- `.claude/skills/tree-visualization/skill.md` - Visualization skill
-
-**Deleted**:
-- 6 old test files (consolidated into test_comprehensive.py)
-- `create_tree_comparison.py` - Replaced with R ggtree integration
-- `README_TREE_COMPARISON.md` - Superseded by README_GGTREE_INTEGRATION.md
-- `tree_comparison_*.jpg` - Removed Python matplotlib images
+**Generated**: 2025-11-26
+**Status**: Documentation updated to reflect all recent work

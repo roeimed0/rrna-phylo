@@ -59,7 +59,8 @@ def compute_likelihood_for_model(
     sequences: List[Sequence],
     model_name: str,
     alpha: Optional[float] = None,
-    verbose: bool = False
+    verbose: bool = False,
+    compressor = None
 ) -> Tuple[float, Dict]:
     """
     Compute likelihood for a specific substitution model.
@@ -70,44 +71,73 @@ def compute_likelihood_for_model(
         model_name: Model name ('JC69', 'K80', 'F81', 'HKY85', 'GTR')
         alpha: Gamma shape parameter (None = no rate heterogeneity)
         verbose: Print details
+        compressor: Optional cached SitePatternCompressor (avoids recomputation)
 
     Returns:
         (log_likelihood, model_params)
         model_params includes fitted parameter values
     """
-    model = get_model(model_name)
+    from rrna_phylo.models.rate_matrices import (
+        get_jc69_rate_matrix,
+        get_k80_rate_matrix,
+        get_f81_rate_matrix,
+        get_hky85_rate_matrix,
+        normalize_rate_matrix
+    )
 
     # Get empirical base frequencies
     freqs = compute_empirical_frequencies(sequences)
 
-    # Set up model parameters
-    params = None
-    if model_name == 'K80':
-        params = np.array([2.0])  # Initial kappa
-    elif model_name == 'HKY85':
-        params = np.array([2.0])  # Initial kappa
-    elif model_name == 'GTR':
-        params = np.ones(6)  # Initial exchangeability rates
+    # Get model-specific rate matrix
+    if model_name == 'JC69':
+        Q = get_jc69_rate_matrix()
+        Q = normalize_rate_matrix(Q, np.array([0.25, 0.25, 0.25, 0.25]))
+        params = None
 
-    # Compute likelihood
-    # Note: We're using the Level 3 likelihood function
-    # which already handles GTR model
-    if model_name == 'GTR':
-        log_likelihood = compute_log_likelihood(
-            tree, sequences, alpha=alpha
-        )
+    elif model_name == 'K80':
+        kappa = 2.0  # Initial guess
+        Q = get_k80_rate_matrix(kappa)
+        Q = normalize_rate_matrix(Q, np.array([0.25, 0.25, 0.25, 0.25]))
+        params = np.array([kappa])
+
+    elif model_name == 'F81':
+        Q = get_f81_rate_matrix(freqs)
+        Q = normalize_rate_matrix(Q, freqs)
+        params = freqs.copy()
+
+    elif model_name == 'HKY85':
+        kappa = 2.0  # Initial guess
+        Q = get_hky85_rate_matrix(kappa, freqs)
+        Q = normalize_rate_matrix(Q, freqs)
+        params = np.array([kappa])
+
+    elif model_name == 'GTR':
+        # For GTR, use rate_matrices implementation
+        from rrna_phylo.models.rate_matrices import get_gtr_rate_matrix
+
+        # Default GTR parameters (can be optimized later)
+        # Format: [rAC, rAG, rAT, rCG, rCT, rGT]
+        # Use typical values: transitions (AG, CT) higher than transversions
+        exchangeabilities = np.array([1.0, 4.0, 1.0, 1.0, 4.0, 1.0])
+
+        Q = get_gtr_rate_matrix(exchangeabilities, freqs)
+        Q = normalize_rate_matrix(Q, freqs)
+        params = exchangeabilities.copy()
+
     else:
-        # For simpler models, we need to compute likelihood
-        # using the model's rate matrix
-        log_likelihood = _compute_likelihood_with_rate_matrix(
-            tree, sequences, model, params, freqs, alpha
-        )
+        raise ValueError(f"Unknown model: {model_name}")
+
+    # Compute likelihood with this rate matrix
+    log_likelihood = _compute_likelihood_with_custom_Q(
+        tree, sequences, Q, freqs, alpha, compressor=compressor
+    )
 
     model_params = {
         'model': model_name,
         'params': params,
         'frequencies': freqs,
-        'alpha': alpha
+        'alpha': alpha,
+        'Q': Q
     }
 
     if verbose:
@@ -116,43 +146,155 @@ def compute_likelihood_for_model(
     return log_likelihood, model_params
 
 
-def _compute_likelihood_with_rate_matrix(
+def _compute_likelihood_with_custom_Q(
     tree: TreeNode,
     sequences: List[Sequence],
-    model,
-    params: Optional[np.ndarray],
+    Q: np.ndarray,
     freqs: np.ndarray,
-    alpha: Optional[float] = None
+    alpha: Optional[float] = None,
+    compressor = None
 ) -> float:
     """
-    Compute likelihood using a specific rate matrix.
+    Compute likelihood using a custom Q matrix (for non-GTR models).
 
-    This is a simplified version that uses the model's rate matrix
-    instead of the GTR matrix used in Level 3.
+    Uses the same site pattern compression and gamma rate heterogeneity
+    as Level 3, but with a custom substitution rate matrix.
 
     Args:
         tree: Tree topology
         sequences: Aligned sequences
-        model: SubstitutionModel instance
-        params: Model-specific parameters
+        Q: 4x4 rate matrix
         freqs: Base frequencies
         alpha: Gamma shape parameter
+        compressor: Optional cached SitePatternCompressor (avoids recomputation)
 
     Returns:
         Log-likelihood
     """
-    # For now, use a simplified approach:
-    # If the model is simpler than GTR, we approximate by
-    # using the GTR likelihood (which should be >= simpler models)
-    # In a full implementation, we'd compute the exact likelihood
-    # using the model's specific rate matrix
+    from rrna_phylo.models.ml_tree_level3 import (
+        SitePatternCompressor,
+        GammaRates
+    )
+    from scipy.linalg import expm
 
-    # This is a placeholder - proper implementation would
-    # compute likelihood using model.get_probability_matrix()
-    # for each branch
+    # Site pattern compression (reuse cached if provided)
+    if compressor is None:
+        compressor = SitePatternCompressor(sequences)
 
-    from rrna_phylo.models.ml_tree_level3 import compute_log_likelihood
-    return compute_log_likelihood(tree, sequences, alpha=alpha)
+    # Gamma rates (if alpha provided)
+    if alpha is not None:
+        gamma = GammaRates(alpha, n_categories=4)
+        Q_matrices = gamma.get_rate_matrices(Q)
+        gamma_probs = gamma.probabilities
+    else:
+        Q_matrices = [Q]
+        gamma_probs = [1.0]
+
+    # Map sequence names to indices
+    seq_id_to_idx = {seq.display_name: i for i, seq in enumerate(sequences)}
+
+    log_likelihood = 0.0
+
+    # Calculate likelihood for each unique pattern
+    for pattern_idx in range(compressor.n_patterns):
+        pattern = compressor.patterns[pattern_idx]
+        count = compressor.pattern_counts[pattern_idx]
+
+        # Average likelihood across gamma categories
+        pattern_likelihood = 0.0
+
+        for cat_idx, Q_cat in enumerate(Q_matrices):
+            cat_prob = gamma_probs[cat_idx]
+
+            # Calculate likelihood for this pattern and category
+            L = _calculate_pattern_likelihood_with_Q(
+                tree, pattern, sequences, Q_cat, seq_id_to_idx, freqs
+            )
+            pattern_likelihood += cat_prob * L
+
+        # Add to total (weighted by pattern count)
+        if pattern_likelihood > 0:
+            log_likelihood += count * np.log(pattern_likelihood)
+        else:
+            log_likelihood += count * (-1000.0)  # Penalty
+
+    return log_likelihood
+
+
+def _calculate_pattern_likelihood_with_Q(
+    tree: TreeNode,
+    pattern: np.ndarray,
+    sequences: List[Sequence],
+    Q: np.ndarray,
+    seq_id_to_idx: dict,
+    freqs: np.ndarray
+) -> float:
+    """
+    Calculate likelihood for one site pattern using Felsenstein's algorithm.
+
+    Args:
+        tree: Tree topology
+        pattern: Site pattern (nucleotide indices)
+        sequences: Sequences (for mapping)
+        Q: Rate matrix
+        seq_id_to_idx: Map from sequence name to index
+        freqs: Base frequencies (for root)
+
+    Returns:
+        Likelihood (not log)
+    """
+    from scipy.linalg import expm
+
+    def conditional_likelihood(node: TreeNode) -> np.ndarray:
+        """Calculate L[node][state] for all states."""
+        if node.is_leaf():
+            L = np.zeros(4)
+            seq_idx = seq_id_to_idx[node.name]
+            observed_state = pattern[seq_idx]
+
+            if observed_state >= 0:
+                L[observed_state] = 1.0
+            else:
+                L[:] = 0.25  # Gap/ambiguous
+
+            return L
+
+        # Internal node: combine children
+        L = np.ones(4)
+
+        if node.left:
+            # Transition probability matrix
+            t = node.left.distance if hasattr(node.left, 'distance') and node.left.distance is not None else 0.01
+            P_left = expm(Q * t)
+
+            # Child likelihoods
+            L_left = conditional_likelihood(node.left)
+
+            # Sum over child states
+            for i in range(4):
+                L[i] *= np.sum(P_left[i, :] * L_left)
+
+        if node.right:
+            # Transition probability matrix
+            t = node.right.distance if hasattr(node.right, 'distance') and node.right.distance is not None else 0.01
+            P_right = expm(Q * t)
+
+            # Child likelihoods
+            L_right = conditional_likelihood(node.right)
+
+            # Sum over child states
+            for i in range(4):
+                L[i] *= np.sum(P_right[i, :] * L_right)
+
+        return L
+
+    # Calculate likelihood at root
+    L_root = conditional_likelihood(tree)
+
+    # Weight by equilibrium frequencies
+    likelihood = np.sum(freqs * L_root)
+
+    return likelihood
 
 
 def select_best_model(
@@ -214,13 +356,20 @@ def select_best_model(
             print(f"Gamma shape parameter: {alpha:.3f}")
         print()
 
+    # Create site pattern compressor once and reuse for all models
+    # (compressor prints compression stats automatically)
+    from rrna_phylo.models.ml_tree_level3 import SitePatternCompressor
+    compressor = SitePatternCompressor(sequences)
+    if verbose:
+        print()  # Blank line after compression message
+
     # Test each model
     for model_name in models:
         model = get_model(model_name)
 
-        # Compute likelihood
+        # Compute likelihood (reuse cached compressor)
         log_likelihood, model_params = compute_likelihood_for_model(
-            tree, sequences, model_name, alpha=alpha, verbose=False
+            tree, sequences, model_name, alpha=alpha, verbose=False, compressor=compressor
         )
 
         # Calculate number of parameters
@@ -299,7 +448,8 @@ def select_best_model_with_gamma(
     models: Optional[List[str]] = None,
     criterion: str = 'BIC',
     test_gamma: bool = True,
-    verbose: bool = False
+    verbose: bool = False,
+    early_stop_threshold: float = 10.0
 ) -> Tuple[str, Optional[float], float, Dict[str, Dict]]:
     """
     Select best model, optionally testing with/without gamma rate heterogeneity.
@@ -311,6 +461,7 @@ def select_best_model_with_gamma(
         criterion: 'AIC' or 'BIC'
         test_gamma: If True, test each model with and without +G
         verbose: Print details
+        early_stop_threshold: Stop testing if BIC difference > threshold (default 10.0)
 
     Returns:
         (best_model, best_alpha, best_score, all_results)
@@ -328,6 +479,8 @@ def select_best_model_with_gamma(
         models = ['JC69', 'K80', 'F81', 'HKY85', 'GTR']
 
     all_results = {}
+    best_score_so_far = float('inf')
+    models_skipped = 0
 
     # Test models without gamma
     for model_name in models:
@@ -340,11 +493,29 @@ def select_best_model_with_gamma(
         )
         all_results[model_name] = results[model_name]
 
+        # Update best score and check early stopping
+        if score < best_score_so_far:
+            best_score_so_far = score
+        elif score - best_score_so_far > early_stop_threshold:
+            models_skipped += 1
+            if verbose:
+                print(f"  Skipping remaining {model_name} variants (BIC diff > {early_stop_threshold})")
+            continue
+
     # Test models with gamma
     if test_gamma:
         alpha_values = [0.5, 1.0, 2.0]  # Test different gamma shapes
 
         for model_name in models:
+            # Check if we should skip this model based on non-gamma performance
+            if model_name in all_results:
+                model_score = all_results[model_name]['score']
+                if model_score - best_score_so_far > early_stop_threshold:
+                    models_skipped += 1
+                    if verbose:
+                        print(f"  Skipping {model_name}+G (base model BIC diff > {early_stop_threshold})")
+                    continue
+
             best_alpha = None
             best_score_for_model = float('inf')
 
@@ -360,6 +531,10 @@ def select_best_model_with_gamma(
                 if score < best_score_for_model:
                     best_score_for_model = score
                     best_alpha = alpha
+
+                # Update global best score
+                if score < best_score_so_far:
+                    best_score_so_far = score
 
             # Store best result with gamma for this model
             _, score, results = select_best_model(
@@ -382,6 +557,8 @@ def select_best_model_with_gamma(
         print("\n" + "=" * 70)
         print("MODEL SELECTION WITH GAMMA VARIANTS")
         print("=" * 70)
+        if models_skipped > 0:
+            print(f"Early stopping: Skipped {models_skipped} models (BIC diff > {early_stop_threshold})")
         print(f"{'Model':<15} {'LogL':>12} {'Params':>8} {criterion:>12} {'Delta':>10}")
         print("-" * 70)
 

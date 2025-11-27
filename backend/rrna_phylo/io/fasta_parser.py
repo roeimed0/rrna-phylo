@@ -88,12 +88,16 @@ class Sequence:
         if self._unique_display_name:
             return self._unique_display_name
 
-        # Otherwise generate default display name
+        # Use species name with main accession in parentheses
+        # NOTE: Do NOT add quotes here - they will be added by to_newick() if needed
         species = self.species_name
+        accession = self.main_accession
+
         if species:
-            return f"{species} ({self.main_accession})"
+            return f"{species} ({accession})"
         else:
-            return self.id
+            # No species name, just use the accession
+            return accession
 
     def is_nucleotide(self) -> bool:
         """Check if sequence is nucleotide (DNA/RNA)."""

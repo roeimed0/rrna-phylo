@@ -136,6 +136,7 @@ class DistanceCalculator:
         ids = [seq.display_name for seq in sequences]
 
         # Calculate pairwise distances
+        warnings_count = 0
         for i in range(n):
             for j in range(i + 1, n):
                 try:
@@ -144,9 +145,15 @@ class DistanceCalculator:
                     matrix[j][i] = dist  # Symmetric
                 except ValueError as e:
                     # If sequences too divergent, use maximum distance
-                    print(f"Warning: {sequences[i].id} vs {sequences[j].id}: {e}")
+                    warnings_count += 1
                     matrix[i][j] = 10.0  # Large distance
                     matrix[j][i] = 10.0
+
+        # Print summary of warnings if any occurred
+        if warnings_count > 0:
+            total_comparisons = (n * (n - 1)) // 2
+            pct = 100 * warnings_count / total_comparisons
+            print(f"\nDistance calculation: {warnings_count} of {total_comparisons} sequence pairs ({pct:.1f}%) too divergent for {self.model} correction")
 
         return matrix, ids
 

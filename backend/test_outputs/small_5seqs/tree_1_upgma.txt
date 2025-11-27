@@ -1,0 +1,17 @@
+UPGMA Tree - 5 Bacterial 16S rRNA Sequences
+======================================================================
+
+Method: UPGMA (Distance-based, Molecular Clock)
+Distance model: Jukes-Cantor
+Log-likelihood: -20609.63
+Construction time: 0.00s
+
+`-- Internal (dist: 0.0000)
+    |-- Internal (dist: 0.0299)
+    |   |-- Internal (dist: 0.0462)
+    |   |   |-- mutans (PX522290) (Streptococcus) (dist: 0.0921)
+    |   |   `-- wiedmannii (PX471271) (Bacillus) (dist: 0.0921)
+    |   `-- Internal (dist: 0.0606)
+    |       |-- soyae (PX471282) (Pseudomonas) (dist: 0.0777)
+    |       `-- enterica (PX518263) (Salmonella) (dist: 0.0777)
+    `-- Bacteroides (PX502587) (Uncultured) (dist: 0.1682)

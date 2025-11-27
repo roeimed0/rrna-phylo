@@ -9,14 +9,15 @@ import copy
 from rrna_phylo.core.tree import TreeNode
 from rrna_phylo.io.fasta_parser import Sequence
 from rrna_phylo.models.ml_tree_level3 import compute_log_likelihood
+from rrna_phylo.models.branch_length_optimizer import optimize_branch_lengths_fast
 
 
 def nni_search(
     tree: TreeNode,
     sequences: List[Sequence],
     alpha: Optional[float] = None,
-    max_iterations: int = 100,
-    tolerance: float = 0.01,
+    max_iterations: int = 50,
+    tolerance: float = 0.1,
     verbose: bool = False
 ) -> Tuple[TreeNode, float, int]:
     """
@@ -31,14 +32,15 @@ def nni_search(
            a. Generate 2 NNI neighbors (different subtree swaps)
            b. Calculate likelihoods of neighbors
            c. Accept best neighbor if it improves likelihood
+           d. **Re-optimize branch lengths** (critical to prevent zero collapse!)
         3. Repeat until no improvement or max iterations reached
 
     Args:
         tree: Starting tree topology
         sequences: Aligned sequences
         alpha: Gamma shape parameter for rate heterogeneity
-        max_iterations: Maximum number of NNI rounds
-        tolerance: Minimum log-likelihood improvement to continue
+        max_iterations: Maximum number of NNI rounds (default 50, reduced from 100)
+        tolerance: Minimum log-likelihood improvement to continue (default 0.1)
         verbose: Print progress information
 
     Returns:
@@ -74,6 +76,7 @@ def nni_search(
     for iteration in range(max_iterations):
         improved_this_round = False
         best_logL_this_round = current_logL
+        logL_before_iteration = current_logL  # Track starting LogL for this iteration
 
         # Get all internal nodes (NNI candidates)
         internal_nodes = current_tree.get_internal_nodes()
@@ -106,6 +109,7 @@ def nni_search(
 
             # Accept if better than current best
             if best_neighbor_logL > best_logL_this_round + tolerance:
+                previous_logL = current_logL  # Save for improvement calculation
                 if logL1 > logL2:
                     current_tree = neighbor1
                     current_logL = logL1
@@ -113,13 +117,24 @@ def nni_search(
                     current_tree = neighbor2
                     current_logL = logL2
 
+                # CRITICAL FIX: Re-optimize branch lengths after topology swap
+                # The old branch lengths were optimized for the OLD topology.
+                # Without re-optimization, branches collapse to zero over iterations.
+                current_logL = optimize_branch_lengths_fast(
+                    current_tree,
+                    sequences,
+                    alpha=alpha,
+                    min_length=0.0001,  # Prevent zero-length branches
+                    verbose=False
+                )
+
                 best_logL_this_round = current_logL
                 improved_this_round = True
                 n_improvements += 1
 
+                improvement = current_logL - previous_logL
                 if verbose:
-                    print(f"  NNI improved: LogL = {current_logL:.2f} "
-                          f"(+{current_logL - (current_logL - tolerance):.2f})")
+                    print(f"  NNI improved: LogL = {current_logL:.2f} (+{improvement:.2f})")
 
         if not improved_this_round:
             if verbose:

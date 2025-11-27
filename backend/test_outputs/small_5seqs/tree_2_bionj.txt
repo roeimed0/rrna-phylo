@@ -1,0 +1,17 @@
+BioNJ Tree - 5 Bacterial 16S rRNA Sequences
+======================================================================
+
+Method: BioNJ (Distance-based, No Clock)
+Distance model: Jukes-Cantor
+Log-likelihood: -20616.02
+Construction time: 0.00s
+
+`-- Internal (dist: 0.0000)
+    |-- Internal (dist: 0.1192)
+    |   |-- Internal (dist: 0.0276)
+    |   |   |-- mutans (PX522290) (Streptococcus) (dist: 0.0873)
+    |   |   `-- wiedmannii (PX471271) (Bacillus) (dist: 0.0970)
+    |   `-- Internal (dist: 0.0610)
+    |       |-- soyae (PX471282) (Pseudomonas) (dist: 0.0905)
+    |       `-- enterica (PX518263) (Salmonella) (dist: 0.0648)
+    `-- Bacteroides (PX502587) (Uncultured) (dist: 0.1192)

@@ -72,7 +72,7 @@ def test_alignment():
         return True
 
     except Exception as e:
-        print(f"\n✗ Alignment failed: {e}")
+        print(f"\n[ERROR] Alignment failed: {e}")
         return False
 
     finally:
@@ -106,7 +106,7 @@ def test_align_sequence_objects():
         return True
 
     except Exception as e:
-        print(f"\n✗ Failed: {e}")
+        print(f"\n[ERROR] Failed: {e}")
         return False
 
     finally:

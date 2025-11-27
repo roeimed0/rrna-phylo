@@ -34,7 +34,20 @@
       "Bash(tree:*)",
       "Bash(python -m flake8:*)",
       "Bash(cat:*)",
-      "Bash(jobs -l)"
+      "Bash(jobs -l)",
+      "Bash(tee:*)",
+      "Bash(tasklist /FI 'IMAGENAME eq python.exe' /FO TABLE)",
+      "Bash(findstr:*)",
+      "Bash(bash scripts/cleanup_test_outputs.sh:*)",
+      "Bash(tasklist:*)",
+      "Bash(while [ ! -f test_smart_output_direct.txt ])",
+      "Bash(! grep -q 'TEST COMPLETE' test_smart_output_direct.txt)",
+      "Bash(do sleep 30)",
+      "Bash(while ! grep -q 'TEST COMPLETE' test_smart_output_direct.txt)",
+      "Bash(do echo '--- Check at $(date +%H:%M:%S) ---')",
+      "Bash(nvidia-smi)",
+      "Bash(set:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

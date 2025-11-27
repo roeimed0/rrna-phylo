@@ -22,6 +22,22 @@ except ImportError:
     ETE3_AVAILABLE = False
 
 
+def _prepare_newick_for_ete3(newick_content: str) -> str:
+    """
+    Prepare Newick string for ETE3 - keep quotes as they are needed for names with spaces.
+
+    ETE3 CAN handle single-quoted names, they're actually required for names with spaces!
+
+    Args:
+        newick_content: Newick format string with potentially quoted names
+
+    Returns:
+        Newick string ready for ETE3
+    """
+    # Keep the newick content as-is - ETE3 handles quotes correctly
+    return newick_content
+
+
 def visualize_tree(
     newick_file: str,
     output_file: str,
@@ -84,12 +100,28 @@ def visualize_tree(
         )
 
     try:
-        # Load tree with quoted node names support (for species names with spaces)
-        tree = Tree(newick_file, format=1, quoted_node_names=True)
+        # Read and prepare Newick file for ETE3
+        with open(newick_file, 'r') as f:
+            newick_content = f.read().strip()
+
+        # Ensure newick string ends with semicolon (required by ETE3)
+        if not newick_content.endswith(';'):
+            newick_content += ';'
+
+        # Remove quotes for ETE3 compatibility
+        newick_content = _prepare_newick_for_ete3(newick_content)
+
+        # Load tree (format=0 is flexible and works with quoted names)
+        # quoted_node_names=True allows names with spaces in single quotes
+        tree = Tree(newick_content, format=0, quoted_node_names=True)
 
         # Create tree style
         ts = TreeStyle()
         ts.mode = "r"  # Rectangular layout
+
+        # IMPORTANT: Align all leaf names to the same vertical axis
+        ts.force_topology = True
+        ts.draw_aligned_faces_as_table = False
 
         # Tree appearance - Simple and clean!
         ts.show_leaf_name = show_leaf_names
@@ -97,13 +129,16 @@ def visualize_tree(
         ts.show_branch_support = show_bootstrap  # ETE3 built-in support display
         ts.branch_vertical_margin = branch_vertical_margin
 
-        # Disable guide lines (dotted lines)
-        ts.draw_guiding_lines = False
-        ts.guiding_lines_type = 0  # Solid (if enabled)
-        ts.guiding_lines_color = "black"
+        # Guide lines to connect branches to aligned names - BLACK SOLID LINES
+        ts.draw_guiding_lines = True  # Enable guide lines for alignment
+        ts.guiding_lines_type = 0  # Solid lines (0=solid, 1=dashed, 2=dotted)
+        ts.guiding_lines_color = "black"  # Black color
 
         # Scale (zoom) - longer branches to see distance values better
         ts.scale = scale  # Pixels per branch length unit
+
+        # No border around tree
+        ts.show_border = False
 
         # Title
         if title:

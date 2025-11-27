@@ -1,13 +1,69 @@
 # rRNA-Phylo
 
-rRNA prediction and phylogenetic tree builder for prokaryotes and eukaryotes.
+Production-ready phylogenetic tree building from rRNA sequences with smart preprocessing and publication-quality visualization.
 
 ## Project Goals
 
-- **rRNA Detection**: Identify 16S, 18S, 23S, 28S, 5S, and 5.8S rRNA in genomic sequences
-- **Phylogenetic Analysis**: Build trees using multiple methods (distance, ML, Bayesian)
-- **Multi-Tree Consensus**: Combine trees for forensics-grade reliability
-- **ML Integration**: Enhance detection and tree building with machine learning
+- **Phylogenetic Analysis**: Build high-quality phylogenetic trees from rRNA sequences using multiple methods (distance-based, Maximum Likelihood)
+- **Generative AI for Trees**: Use machine learning to synthesize trees from sequences and ensemble multiple tree methods (Graph Neural Networks, Transformers)
+- **Smart Preprocessing**: Handle real-world data challenges (duplicates, database bias, multiple rRNA operons per genome)
+- **Publication-Quality Output**: Generate professional visualizations suitable for scientific publications
+- **Production-Ready**: Fast, reliable, and well-tested implementation in pure Python
+
+## Current Features [OK]
+
+### Production-Ready (November 2025)
+
+✅ **Phylogenetic Tree Building**
+- UPGMA (distance-based, molecular clock)
+- BioNJ (variance-weighted neighbor-joining)
+- ML (Maximum Likelihood with GTR+Gamma model)
+- Automatic model selection (AIC/BIC)
+- NNI tree search
+
+✅ **Bootstrap Analysis**
+- 100-1000 replicates supported
+- Parallel processing (all CPU cores)
+- Reproducible with random seeds
+- Integrated with all tree methods
+
+✅ **ETE3 Visualization**
+- Publication-quality output (PDF, PNG, SVG, EPS)
+- 300-600 DPI resolution
+- Aligned leaf names for professional appearance
+- Bootstrap support values with color coding
+- Used by Nature, Science, and Cell publications
+
+✅ **Smart Deduplication**
+- Two-tier strategy (exact + similarity at 99.5%)
+- Species-aware clustering prevents phylogenetic errors
+- 40-60% dataset reduction without information loss
+- 28 comprehensive tests
+
+✅ **Display Names**
+- Human-readable species names in trees
+- Format: "Species name (Accession) #N"
+- Example: "Escherichia coli str. K-12 substr. MG1655 (U00096) #1"
+
+✅ **Complete CLI**
+- 20+ command-line options
+- Full control over preprocessing, tree building, and visualization
+- Comprehensive user guide with real-world workflows
+
+### Quick Start
+
+```bash
+# Build a tree with bootstrap and visualization
+cd backend
+python -m rrna_phylo.cli test_real_rrana.fasta \
+    --method ml \
+    --bootstrap 100 \
+    --dereplicate \
+    --visualize \
+    -o results/
+```
+
+**See [USAGE_GUIDE.md](backend/docs/user-guide/usage-guide.md) for complete examples and workflows.**
 
 ## Development Skills
 

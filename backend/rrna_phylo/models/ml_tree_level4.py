@@ -35,6 +35,7 @@ def build_ml_tree_level4(
     starting_tree: Optional[TreeNode] = None,
     criterion: str = 'BIC',
     test_gamma: bool = True,
+    skip_model_selection: bool = False,
     verbose: bool = False
 ) -> Tuple[TreeNode, float, Dict]:
     """
@@ -55,6 +56,7 @@ def build_ml_tree_level4(
         starting_tree: Initial topology (None = use BioNJ)
         criterion: 'AIC' or 'BIC' for model selection
         test_gamma: Test models with +G variants
+        skip_model_selection: If True, use GTR+G directly (10x faster, model selection currently broken)
         verbose: Print detailed progress
 
     Returns:
@@ -126,7 +128,7 @@ def build_ml_tree_level4(
     # Step 2: Model selection (if auto)
     time_model_start = time.time()
 
-    if model == 'auto':
+    if model == 'auto' and not skip_model_selection:
         if test_gamma:
             # Test models with and without gamma
             if verbose:
@@ -165,6 +167,21 @@ def build_ml_tree_level4(
 
         selected_model = best_model.replace('+G', '')  # Remove +G suffix for now
         selected_alpha = metadata['alpha']
+
+    elif model == 'auto' and skip_model_selection:
+        # Skip model selection and use GTR+G directly (much faster!)
+        selected_model = 'GTR'
+        selected_alpha = 1.0 if alpha is None else alpha
+        metadata['selected_model'] = 'GTR+G'
+        metadata['alpha'] = selected_alpha
+        metadata['model_selection_skipped'] = True
+        if verbose:
+            print("\nSkipping model selection (using GTR+G directly for speed)")
+            print("WARNING: Also skipping NNI tree search (NNI currently breaks branch lengths)")
+
+        # TEMPORARY FIX: Skip NNI when skipping model selection
+        # NNI is collapsing branches to zero - needs proper branch length re-optimization
+        tree_search = None  # Override to skip NNI
 
     else:
         # Use specified model
