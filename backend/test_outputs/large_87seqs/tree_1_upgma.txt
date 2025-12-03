@@ -3,8 +3,8 @@ UPGMA Tree - 87 Bacterial 16S rRNA Sequences
 
 Method: UPGMA (Distance-based, Molecular Clock)
 Distance model: Jukes-Cantor
-Log-likelihood: -308688.68
-Construction time: 1.20s
+Log-likelihood: -307858.77
+Construction time: 1.18s
 
 `-- Internal (dist: 0.0000)
     |-- Internal (dist: 0.3966)

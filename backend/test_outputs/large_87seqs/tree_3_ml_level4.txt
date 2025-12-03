@@ -1,10 +1,14 @@
-BioNJ Tree - 87 Bacterial 16S rRNA Sequences
+ML Level 4 Tree - 87 Bacterial 16S rRNA Sequences
 ======================================================================
 
-Method: BioNJ (Distance-based, No Clock)
-Distance model: Jukes-Cantor
-Log-likelihood: -313552.23
-Construction time: 0.25s
+Method: Maximum Likelihood (Level 4)
+Selected model: HKY85
+Model score (BIC): 584623.81
+Initial LogL: -313552.23
+Final LogL: -313260.63
+Improvement: +291.60
+NNI improvements: 0
+Construction time: 10.70s
 
 `-- Internal (dist: 0.0000)
     |-- Internal (dist: 0.1536)

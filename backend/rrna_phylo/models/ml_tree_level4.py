@@ -23,7 +23,7 @@ from rrna_phylo.models.model_selection import (
     select_best_model,
     select_best_model_with_gamma
 )
-from rrna_phylo.models.tree_search import nni_search, hill_climbing_search
+from rrna_phylo.models.tree_search import nni_search
 
 
 def build_ml_tree_level4(
@@ -36,7 +36,10 @@ def build_ml_tree_level4(
     criterion: str = 'BIC',
     test_gamma: bool = True,
     skip_model_selection: bool = False,
-    verbose: bool = False
+    use_gpu: bool = False,
+    verbose: bool = False,
+    enable_pruning: bool = True,
+    pruning_k: Optional[int] = None
 ) -> Tuple[TreeNode, float, Dict]:
     """
     Build Maximum Likelihood phylogenetic tree with Level 4 features.
@@ -57,6 +60,7 @@ def build_ml_tree_level4(
         criterion: 'AIC' or 'BIC' for model selection
         test_gamma: Test models with +G variants
         skip_model_selection: If True, use GTR+G directly (10x faster, model selection currently broken)
+        use_gpu: Use GPU acceleration (True/False/'auto' for dataset-size based selection)
         verbose: Print detailed progress
 
     Returns:
@@ -134,7 +138,7 @@ def build_ml_tree_level4(
             if verbose:
                 print("\nPerforming model selection with gamma variants...")
 
-            best_model, best_alpha, best_score, all_results = select_best_model_with_gamma(
+            best_model, best_alpha, best_score, all_results, compressor = select_best_model_with_gamma(
                 initial_tree,
                 sequences,
                 criterion=criterion,
@@ -146,13 +150,14 @@ def build_ml_tree_level4(
             metadata['alpha'] = best_alpha
             metadata['model_score'] = best_score
             metadata['all_model_scores'] = all_results
+            metadata['compressor'] = compressor  # Store for NNI reuse
 
         else:
             # Test models without gamma
             if verbose:
                 print("\nPerforming model selection...")
 
-            best_model, best_score, all_results = select_best_model(
+            best_model, best_score, all_results, compressor = select_best_model(
                 initial_tree,
                 sequences,
                 criterion=criterion,
@@ -164,6 +169,7 @@ def build_ml_tree_level4(
             metadata['model_score'] = best_score
             metadata['alpha'] = alpha
             metadata['all_model_scores'] = all_results
+            metadata['compressor'] = compressor  # Store for NNI reuse
 
         selected_model = best_model.replace('+G', '')  # Remove +G suffix for now
         selected_alpha = metadata['alpha']
@@ -175,6 +181,11 @@ def build_ml_tree_level4(
         metadata['selected_model'] = 'GTR+G'
         metadata['alpha'] = selected_alpha
         metadata['model_selection_skipped'] = True
+
+        # CRITICAL FIX: Always create compressor for CPU/GPU consistency!
+        from rrna_phylo.models.ml_tree_level3 import SitePatternCompressor
+        metadata['compressor'] = SitePatternCompressor(sequences)
+
         if verbose:
             print("\nSkipping model selection (using GTR+G directly for speed)")
             print("WARNING: Also skipping NNI tree search (NNI currently breaks branch lengths)")
@@ -189,6 +200,10 @@ def build_ml_tree_level4(
         selected_alpha = alpha
         metadata['selected_model'] = model
         metadata['alpha'] = alpha
+
+        # CRITICAL FIX: Always create compressor for CPU/GPU consistency!
+        from rrna_phylo.models.ml_tree_level3 import SitePatternCompressor
+        metadata['compressor'] = SitePatternCompressor(sequences)
 
     metadata['time_model_selection'] = time.time() - time_model_start
 
@@ -215,19 +230,29 @@ def build_ml_tree_level4(
 
     if tree_search == 'nni':
         if verbose:
-            print("\nPerforming NNI tree search...")
+            device_str = "GPU" if use_gpu else "CPU"
+            print(f"\nPerforming NNI tree search on {device_str}...")
+
+        # CRITICAL FIX: Pass compressor from model selection to ensure CPU/GPU consistency
+        compressor_for_nni = metadata.get('compressor', None)
 
         improved_tree, improved_logL, n_improvements = nni_search(
             initial_tree,
             sequences,
+            model_name=selected_model,  # CRITICAL: Pass selected model!
             alpha=selected_alpha,
             max_iterations=max_iterations,
-            verbose=verbose
+            use_gpu=use_gpu,  # GPU support!
+            verbose=verbose,
+            enable_pruning=enable_pruning,
+            pruning_k=pruning_k,
+            compressor=compressor_for_nni  # CRITICAL: Pass compressor for GPU reuse!
         )
 
         current_tree = improved_tree
         current_logL = improved_logL
         metadata['n_nni_improvements'] = n_improvements
+        metadata['used_gpu'] = use_gpu
 
     elif tree_search == 'hill':
         if verbose:
@@ -280,6 +305,7 @@ def build_ml_tree_level4(
 
 def build_ml_tree_fast(
     sequences: List[Sequence],
+    use_gpu: bool = 'auto',
     verbose: bool = False
 ) -> Tuple[TreeNode, float, Dict]:
     """
@@ -289,9 +315,11 @@ def build_ml_tree_fast(
     - Automatic model selection (BIC)
     - NNI tree search (10 iterations)
     - Gamma rate heterogeneity testing
+    - Auto GPU selection based on dataset size
 
     Args:
         sequences: Aligned sequences
+        use_gpu: True/False/'auto' for GPU usage
         verbose: Print progress
 
     Returns:
@@ -304,6 +332,7 @@ def build_ml_tree_fast(
         max_iterations=10,
         criterion='BIC',
         test_gamma=True,
+        use_gpu=use_gpu,
         verbose=verbose
     )
 

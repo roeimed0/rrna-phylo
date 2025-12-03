@@ -86,56 +86,109 @@ class GammaRates:
 
     def _calculate_rates(self):
         """
-        Calculate discrete gamma rate categories.
+        Calculate discrete gamma rate categories using Yang 1994 method.
 
-        Uses the mean of each category (Yang 1994 method).
+        CRITICAL FIX: Now matches GPU implementation exactly!
         """
+        try:
+            from scipy.stats import gamma as scipy_gamma_dist
+            from scipy.special import gammainc, gamma as gamma_func
+            scipy_available = True
+        except ImportError:
+            scipy_available = False
+
+        if not scipy_available:
+            # Fallback to simple approximation if scipy not available
+            rates = []
+            probs = []
+            prob_per_cat = 1.0 / self.n_categories
+            for i in range(self.n_categories):
+                mid_point = (i + 0.5) / self.n_categories
+                rate = self.alpha * mid_point
+                rates.append(rate)
+                probs.append(prob_per_cat)
+            self.rates = np.array(rates)
+            self.probabilities = np.array(probs)
+            mean_rate = np.sum(self.rates * self.probabilities)
+            self.rates = self.rates / mean_rate
+            return
+
+        # YANG 1994 METHOD (matches GPU exactly!)
+        k = self.n_categories
+        a = self.alpha
+
+        # Compute equal-probability boundaries using ppf (percent point function)
+        ps = np.linspace(0.0, 1.0, k + 1)
+        eps = 1e-12
+        ps[0] = eps
+        ps[-1] = 1.0 - eps
+
+        try:
+            boundaries = scipy_gamma_dist.ppf(ps, a, scale=1.0 / a)
+        except Exception:
+            # Fallback
+            boundaries = np.array([(i / k) for i in range(k + 1)], dtype=float)
+
+        # Compute mean within each truncated interval
         rates = []
-        probs = []
+        for i in range(k):
+            low = float(boundaries[i])
+            high = float(boundaries[i + 1])
 
-        # Each category has equal probability
-        prob_per_cat = 1.0 / self.n_categories
+            if not np.isfinite(low) or not np.isfinite(high) or high <= low:
+                # Fallback to midpoint
+                midp = (i + 0.5) / k
+                try:
+                    mid = float(scipy_gamma_dist.ppf(midp, a, scale=1.0 / a))
+                except:
+                    mid = 1.0
+                rates.append(mid)
+                continue
 
-        for i in range(self.n_categories):
-            # Quantile boundaries
-            lower = i / self.n_categories
-            upper = (i + 1) / self.n_categories
+            # Use mean-truncated gamma
+            r = self._gamma_mean_truncated(a, low, high, gamma_func, gammainc)
+            rates.append(r)
 
-            # Calculate mean rate for this category
-            # This involves incomplete gamma function
-            rate = self._gamma_category_mean(lower, upper)
-            rates.append(rate)
-            probs.append(prob_per_cat)
+        self.rates = np.array(rates, dtype=np.float64)
+        self.probabilities = np.ones(k, dtype=np.float64) / k
 
-        self.rates = np.array(rates)
-        self.probabilities = np.array(probs)
-
-        # Normalize so mean rate = 1
+        # Normalize so mean = 1
         mean_rate = np.sum(self.rates * self.probabilities)
         self.rates = self.rates / mean_rate
 
-    def _gamma_category_mean(self, lower: float, upper: float) -> float:
+        # VALIDATION: Gamma rates must average to 1.0 and probs must sum to 1.0
+        final_mean = np.sum(self.rates * self.probabilities)
+        assert np.abs(final_mean - 1.0) < 1e-6, \
+            f"Gamma rate mean ({final_mean}) != 1.0 after normalization!"
+        prob_sum = np.sum(self.probabilities)
+        assert np.abs(prob_sum - 1.0) < 1e-6, \
+            f"Gamma probabilities sum ({prob_sum}) != 1.0!"
+
+    def _gamma_mean_truncated(self, a: float, low: float, high: float, gamma_func, gammainc) -> float:
         """
-        Calculate mean rate for a gamma category.
+        Compute mean of Gamma(a, scale=1/a) truncated to (low, high).
 
-        Uses numerical integration of gamma distribution.
-
-        Args:
-            lower: Lower quantile
-            upper: Upper quantile
-
-        Returns:
-            Mean rate for this category
+        Uses Yang 1994 method with incomplete gamma functions.
+        MATCHES GPU implementation exactly!
         """
-        # Gamma distribution parameters
-        beta = self.alpha  # For mean = 1
+        L = a * low
+        H = a * high
 
-        # Use incomplete gamma function
-        # This is an approximation - full implementation would integrate
-        mid_point = (lower + upper) / 2
-        rate = self.alpha * mid_point
+        # Denominator: P(low < X < high) = P(X < high) - P(X < low)
+        denom = gammainc(a, H) - gammainc(a, L)
+        if denom <= 0 or not np.isfinite(denom):
+            return 1.0
 
-        return rate
+        # Numerator: E[X * I(low<X<high)]
+        lower_term = gammainc(a + 1, L)
+        upper_term = gammainc(a + 1, H)
+        num_unreg = gamma_func(a + 1) * (upper_term - lower_term)
+        num = (num_unreg / a) / gamma_func(a)
+
+        mean_trunc = num / denom
+        if not np.isfinite(mean_trunc) or mean_trunc <= 0:
+            return 1.0
+        return float(mean_trunc)
 
     def get_rate_matrices(self, base_Q: np.ndarray) -> List[np.ndarray]:
         """
@@ -226,9 +279,15 @@ class SitePatternCompressor:
                 patterns_dict[pattern] = 1
 
         # Convert to arrays
+        # CRITICAL FIX: Use float64 for counts to match GPU (prevents LL differences)
         self.patterns = np.array([list(p) for p in patterns_dict.keys()])
-        self.pattern_counts = np.array(list(patterns_dict.values()))
+        self.pattern_counts = np.array(list(patterns_dict.values()), dtype=np.float64)
         self.n_patterns = len(patterns_dict)
+
+        # VALIDATION: Pattern count sum must equal sequence length
+        count_sum = np.sum(self.pattern_counts)
+        assert np.abs(count_sum - seq_len) < 1e-6, \
+            f"Pattern count sum ({count_sum}) != sequence length ({seq_len})!"
 
         compression_ratio = seq_len / self.n_patterns
         print(f"Site pattern compression: {seq_len} sites -> {self.n_patterns} patterns "

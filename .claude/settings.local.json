@@ -47,7 +47,10 @@
       "Bash(do echo '--- Check at $(date +%H:%M:%S) ---')",
       "Bash(nvidia-smi)",
       "Bash(set:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(pkill:*)",
+      "Bash(git checkout:*)",
+      "Bash(bash:*)"
     ],
     "deny": [],
     "ask": []

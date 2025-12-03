@@ -246,6 +246,7 @@ class PhylogeneticTreeBuilder:
                 alpha=alpha,
                 tree_search='nni',
                 skip_model_selection=skip_model_selection,
+                use_gpu='auto',  # Auto GPU selection based on dataset size
                 verbose=self.verbose
             )
 

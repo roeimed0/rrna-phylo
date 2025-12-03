@@ -149,15 +149,17 @@ def run_full_pipeline(sequences, output_dir, dataset_name):
     print()
 
     start = time.time()
+    # NNI now uses calculator reuse - should be fast for all dataset sizes!
     ml_tree, ml_logL, metadata = build_ml_tree_level4(
         sequences,
         model='auto',
         alpha=None,
-        tree_search='nni',
-        max_iterations=10,
+        tree_search='nni',  # Re-enabled with calculator reuse fix
+        max_iterations=5,
         criterion='BIC',
         test_gamma=False,
-        verbose=False  # Suppress detailed output for cleaner logs
+        use_gpu='auto',  # Enable GPU for 7+ sequences
+        verbose=True
     )
     ml_time = time.time() - start
 

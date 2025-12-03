@@ -427,9 +427,16 @@ def compute_empirical_frequencies(sequences: list) -> np.ndarray:
     if total == 0:
         return np.array([0.25, 0.25, 0.25, 0.25])
 
-    return np.array([
+    freqs = np.array([
         counts['A'] / total,
         counts['C'] / total,
         counts['G'] / total,
         counts['T'] / total
     ])
+
+    # VALIDATION: Base frequencies must sum to 1.0
+    freq_sum = np.sum(freqs)
+    assert np.abs(freq_sum - 1.0) < 1e-10, \
+        f"Base frequencies sum ({freq_sum}) != 1.0!"
+
+    return freqs

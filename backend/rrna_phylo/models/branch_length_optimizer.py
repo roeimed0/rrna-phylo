@@ -151,7 +151,8 @@ def optimize_branch_lengths_fast(
     sequences: List[Sequence],
     alpha: Optional[float] = None,
     min_length: float = 0.0001,
-    verbose: bool = False
+    verbose: bool = False,
+    calculator = None
 ) -> float:
     """
     Fast single-pass branch length optimization.
@@ -160,8 +161,9 @@ def optimize_branch_lengths_fast(
     full optimization. Good enough for NNI search where topology is changing
     frequently.
 
-    PERFORMANCE: Creates calculator once and reuses it for all branches!
-    This avoids recreating the site pattern compressor hundreds of times.
+    PERFORMANCE: Accepts optional calculator to avoid recreating it!
+    Critical for NNI which evaluates dozens of neighbors - without this,
+    each neighbor creates its own calculator (54 calculators for 87 sequences!)
 
     Args:
         tree: Tree to optimize
@@ -169,6 +171,7 @@ def optimize_branch_lengths_fast(
         alpha: Gamma parameter
         min_length: Minimum branch length
         verbose: Print progress
+        calculator: Optional cached LikelihoodCalculatorLevel3 (CRITICAL for NNI performance!)
 
     Returns:
         Final log-likelihood
@@ -176,17 +179,24 @@ def optimize_branch_lengths_fast(
     if verbose:
         print("  Re-optimizing branch lengths (fast)...")
 
-    # Create calculator once and reuse (HUGE speedup!)
-    from rrna_phylo.models.ml_tree import GTRModel
-    from rrna_phylo.models.ml_tree_level3 import LikelihoodCalculatorLevel3
+    # CRITICAL FIX: Accept calculator from caller (e.g., NNI search)
+    # Only create if not provided (for standalone use)
+    if calculator is None:
+        # Create calculator once and reuse (HUGE speedup!)
+        from rrna_phylo.models.ml_tree import GTRModel
+        from rrna_phylo.models.ml_tree_level3 import LikelihoodCalculatorLevel3
 
-    model = GTRModel()
-    model.estimate_parameters(sequences)
+        model = GTRModel()
+        model.estimate_parameters(sequences)
 
+        if alpha is None:
+            alpha = 1.0
+
+        calculator = LikelihoodCalculatorLevel3(model, sequences, alpha=alpha)
+
+    # If alpha not provided but calculator is, use default
     if alpha is None:
         alpha = 1.0
-
-    calculator = LikelihoodCalculatorLevel3(model, sequences, alpha=alpha)
 
     # Get all nodes with incoming branches
     all_nodes = []

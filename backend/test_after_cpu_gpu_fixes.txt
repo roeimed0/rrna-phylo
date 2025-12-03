@@ -1,0 +1,282 @@
+
+
+================================================================================
+COMPLETE PHYLOGENETIC PIPELINE TEST
+================================================================================
+
+Testing on 2 datasets:
+  1. Small (5 sequences) - Quick validation
+  2. Large (87 sequences) - Production scale
+
+Each dataset generates 3 trees:
+  - UPGMA (fast, assumes molecular clock)
+  - BioNJ (fast, no clock assumption)
+  - ML Level 4 (complete ML pipeline)
+
+================================================================================
+
+[OK] Loaded 87 pure 16S rRNA sequences from SILVA
+
+
+
+================================================================================
+DATASET: 5 Bacterial 16S rRNA Sequences
+================================================================================
+Sequences: 5
+Alignment length: 3299 bp
+Output directory: test_outputs/small_5seqs/
+
+--------------------------------------------------------------------------------
+TREE 1: UPGMA (Distance-based, Molecular Clock)
+--------------------------------------------------------------------------------
+Estimated base frequencies: A=0.260, C=0.217, G=0.314, T=0.209
+Site pattern compression: 3299 sites -> 262 patterns (12.6x speedup)
+Time: 0.00s, LogL: -20598.72
+[OK] Saved: .nwk, .txt, .pdf
+
+--------------------------------------------------------------------------------
+TREE 2: BioNJ (Distance-based, No Clock)
+--------------------------------------------------------------------------------
+Estimated base frequencies: A=0.260, C=0.217, G=0.314, T=0.209
+Site pattern compression: 3299 sites -> 262 patterns (12.6x speedup)
+Time: 0.00s, LogL: -20587.81
+[OK] Saved: .nwk, .txt, .pdf
+
+--------------------------------------------------------------------------------
+TREE 3: ML Level 4 (Complete ML Pipeline)
+--------------------------------------------------------------------------------
+Running: Model selection + ML tree + NNI optimization...
+
+
+======================================================================
+MAXIMUM LIKELIHOOD TREE - LEVEL 4
+======================================================================
+Sequences: 5
+Alignment length: 3299
+Model: auto
+Tree search: nni
+Model selection criterion: BIC
+
+Building initial tree with BioNJ...
+Initial tree has 5 leaves
+
+Performing model selection...
+Site pattern compression: 3299 sites -> 262 patterns (12.6x speedup)
+Model                LogL   Params          BIC      Delta
+----------------------------------------------------------------------
+HKY85           -19984.22       12     40065.66       0.00 *
+F81             -20006.68       11     40102.48      36.82
+GTR             -20003.56       17     40144.84      79.18
+K80             -20056.90        9     40186.71     121.05
+JC69            -20096.94        8     40258.68     193.02
+
+* Best model selected
+
+Best model: HKY85
+BIC score: 40065.66
+
+Using model: HKY85
+Estimated base frequencies: A=0.260, C=0.217, G=0.314, T=0.209
+Site pattern compression: 3299 sites -> 262 patterns (12.6x speedup)
+Initial LogL: -20587.81
+
+Performing NNI tree search on GPU...
+Creating likelihood calculator (model=HKY85, device=CPU)...
+Site pattern compression: 3299 sites -> 262 patterns (12.6x speedup)
+Calculator ready. Alpha=1.00
+
+======================================================================
+IN-PLACE NNI TREE SEARCH
+======================================================================
+Initial LogL: -20553.59
+Max iterations: 5
+Tolerance: 0.1
+
+Iteration 1: 1 NNI candidates
+
+NNI converged after 1 iterations
+Final LogL: -20553.59
+Total improvements: 0
+
+======================================================================
+LEVEL 4 ML TREE COMPLETE
+======================================================================
+Model: HKY85
+Initial LogL: -20587.81
+Final LogL: -20553.59
+Improvement: 34.22
+NNI improvements: 0
+
+Timing:
+  Model selection: 0.14s
+  Tree search: 0.31s
+  Total: 0.58s
+======================================================================
+Time: 0.58s, LogL: -20553.59
+Model selected: HKY85
+NNI improvements: 0
+[OK] Saved: .nwk, .txt, .pdf
+
+================================================================================
+SUMMARY: 5 Bacterial 16S rRNA Sequences
+================================================================================
+
+Tree                            LogL       Time
+--------------------------------------------------
+UPGMA                      -20598.72      0.00s
+BioNJ                      -20587.81      0.00s
+ML Level 4                 -20553.59      0.58s
+
+Best tree: ML Level 4 (LogL: -20553.59)
+Total time: 0.59s
+Output files: 9 (3 trees x 3 formats)
+
+
+
+================================================================================
+DATASET: 87 Bacterial 16S rRNA Sequences
+================================================================================
+Sequences: 87
+Alignment length: 3299 bp
+Output directory: test_outputs/large_87seqs/
+
+--------------------------------------------------------------------------------
+TREE 1: UPGMA (Distance-based, Molecular Clock)
+--------------------------------------------------------------------------------
+
+Distance calculation: 54 of 3741 pairs (1.4%) too divergent
+Estimated base frequencies: A=0.249, C=0.228, G=0.317, T=0.206
+Site pattern compression: 3299 sites -> 1381 patterns (2.4x speedup)
+Time: 1.18s, LogL: -307858.77
+[OK] Saved: .nwk, .txt, .pdf
+
+--------------------------------------------------------------------------------
+TREE 2: BioNJ (Distance-based, No Clock)
+--------------------------------------------------------------------------------
+Estimated base frequencies: A=0.249, C=0.228, G=0.317, T=0.206
+Site pattern compression: 3299 sites -> 1381 patterns (2.4x speedup)
+Time: 0.25s, LogL: -313552.23
+[OK] Saved: .nwk, .txt, .pdf
+
+--------------------------------------------------------------------------------
+TREE 3: ML Level 4 (Complete ML Pipeline)
+--------------------------------------------------------------------------------
+Running: Model selection + ML tree + NNI optimization...
+
+
+======================================================================
+MAXIMUM LIKELIHOOD TREE - LEVEL 4
+======================================================================
+Sequences: 87
+Alignment length: 3299
+Model: auto
+Tree search: nni
+Model selection criterion: BIC
+
+Building initial tree with BioNJ...
+
+Distance calculation: 54 of 3741 pairs (1.4%) too divergent
+Initial tree has 87 leaves
+
+Performing model selection...
+Site pattern compression: 3299 sites -> 1381 patterns (2.4x speedup)
+Model                LogL   Params          BIC      Delta
+----------------------------------------------------------------------
+HKY85          -291598.99      176    584623.81       0.00 *
+GTR            -291681.51      181    584829.38     205.56
+F81            -292078.42      175    585574.59     950.77
+K80            -292716.78      173    586835.09    2211.28
+JC69           -293412.43      172    588218.29    3594.48
+
+* Best model selected
+
+Best model: HKY85
+BIC score: 584623.81
+
+Using model: HKY85
+Estimated base frequencies: A=0.249, C=0.228, G=0.317, T=0.206
+Site pattern compression: 3299 sites -> 1381 patterns (2.4x speedup)
+Initial LogL: -313552.23
+
+Performing NNI tree search on GPU...
+Creating likelihood calculator (model=HKY85, device=GPU)...
+Calculator ready. Alpha=1.00
+
+======================================================================
+IN-PLACE NNI TREE SEARCH
+======================================================================
+Initial LogL: -313260.63
+Max iterations: 5
+Tolerance: 0.1
+
+Iteration 1: Testing 13/27 candidates (pruned)
+
+NNI converged after 1 iterations
+Final LogL: -313260.63
+Total improvements: 0
+
+======================================================================
+LEVEL 4 ML TREE COMPLETE
+======================================================================
+Model: HKY85
+Initial LogL: -313552.23
+Final LogL: -313260.63
+Improvement: 291.60
+NNI improvements: 0
+
+Timing:
+  Model selection: 3.70s
+  Tree search: 0.96s
+  Total: 10.70s
+======================================================================
+Time: 10.70s, LogL: -313260.63
+Model selected: HKY85
+NNI improvements: 0
+[OK] Saved: .nwk, .txt, .pdf
+
+================================================================================
+SUMMARY: 87 Bacterial 16S rRNA Sequences
+================================================================================
+
+Tree                            LogL       Time
+--------------------------------------------------
+UPGMA                     -307858.77      1.18s
+BioNJ                     -313552.23      0.25s
+ML Level 4                -313260.63     10.70s
+
+Best tree: UPGMA (LogL: -307858.77)
+Total time: 12.13s
+Output files: 9 (3 trees x 3 formats)
+
+
+
+================================================================================
+FINAL REPORT: ALL TESTS COMPLETE
+================================================================================
+
+Dataset 1: Small (5 sequences)
+--------------------------------------------------
+  UPGMA:      LogL = -20598.72, Time = 0.00s
+  BioNJ:      LogL = -20587.81, Time = 0.00s
+  ML Level 4: LogL = -20553.59, Time = 0.58s
+  Model: HKY85
+  NNI improvements: 0
+
+Dataset 2: Large (87 sequences)
+--------------------------------------------------
+  UPGMA:      LogL = -307858.77, Time = 1.18s
+  BioNJ:      LogL = -313552.23, Time = 0.25s
+  ML Level 4: LogL = -313260.63, Time = 10.70s
+  Model: HKY85
+  NNI improvements: 0
+
+Output directories:
+  test_outputs/small_5seqs/   - 9 files (3 trees x 3 formats)
+  test_outputs/large_87seqs/  - 9 files (3 trees x 3 formats)
+
+Total output files: 18
+
+================================================================================
+[OK] ALL TESTS PASSED - PIPELINE WORKING CORRECTLY
+================================================================================
+
