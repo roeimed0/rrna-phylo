@@ -22,7 +22,7 @@ from rrna_phylo.methods.bionj import build_bionj_tree
 from rrna_phylo.models.ml_tree_level3 import compute_log_likelihood
 from rrna_phylo.models.ml_tree_level4 import build_ml_tree_level4
 from rrna_phylo.visualization.ete3_viz import visualize_tree
-from rrna_phylo.utils.visualize_trees import print_tree_ascii
+from rrna_phylo.visualization import print_tree_ascii
 
 
 def run_full_pipeline(sequences, output_dir, dataset_name):

@@ -50,7 +50,9 @@
       "Bash(python:*)",
       "Bash(pkill:*)",
       "Bash(git checkout:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(git commit:*)",
+      "Bash(for:*)"
     ],
     "deny": [],
     "ask": []

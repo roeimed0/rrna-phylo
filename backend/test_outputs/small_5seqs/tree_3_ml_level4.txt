@@ -8,7 +8,7 @@ Initial LogL: -20587.81
 Final LogL: -20553.59
 Improvement: +34.22
 NNI improvements: 0
-Construction time: 0.58s
+Construction time: 0.20s
 
 `-- Internal (dist: 0.0000)
     |-- Internal (dist: 0.1677)
