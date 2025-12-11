@@ -1,14 +1,4 @@
-"""
-Maximum Likelihood Tree Inference - Level 2
-
-This implements a complete ML phylogenetic inference pipeline:
-1. GTR substitution model (from Level 1)
-2. Felsenstein's Pruning Algorithm (full implementation)
-3. Branch length optimization (Brent's method)
-4. NNI tree search
-
-This is ~500 lines and provides real ML functionality.
-"""
+"""Maximum Likelihood tree inference with GTR, Felsenstein's algorithm, and NNI search."""
 
 import numpy as np
 from scipy.linalg import expm
@@ -21,29 +11,10 @@ from rrna_phylo.models.ml_tree import GTRModel
 
 
 class LikelihoodCalculator:
-    """
-    Calculate tree likelihood using Felsenstein's Pruning Algorithm.
-
-    Algorithm Overview:
-    ==================
-    For each site (column) in alignment:
-    1. At leaves: conditional_likelihood = 1 if matches, 0 otherwise
-    2. At internal nodes: sum over child states weighted by P(t)
-    3. At root: sum over root states weighted by base frequencies
-    4. Multiply across all sites (in log space)
-
-    This is O(n * m * 16) where n=sequences, m=sites
-    Instead of O(4^n) naive approach!
-    """
+    """Calculate tree likelihood using Felsenstein's Pruning Algorithm."""
 
     def __init__(self, model: GTRModel, sequences: List[Sequence]):
-        """
-        Initialize likelihood calculator.
-
-        Args:
-            model: GTR substitution model
-            sequences: Aligned sequences
-        """
+        """Initialize likelihood calculator."""
         self.model = model
         self.sequences = sequences
         self.n_seq = len(sequences)
@@ -69,17 +40,7 @@ class LikelihoodCalculator:
         return alignment
 
     def calculate_likelihood(self, tree: TreeNode) -> float:
-        """
-        Calculate log-likelihood of tree given alignment.
-
-        Uses Felsenstein's Pruning Algorithm.
-
-        Args:
-            tree: Phylogenetic tree
-
-        Returns:
-            Log-likelihood
-        """
+        """Calculate log-likelihood of tree given alignment."""
         log_likelihood = 0.0
 
         # Calculate likelihood for each site
@@ -96,18 +57,7 @@ class LikelihoodCalculator:
         return log_likelihood
 
     def _calculate_site_likelihood(self, tree: TreeNode, site_data: np.ndarray) -> float:
-        """
-        Calculate likelihood for one alignment column.
-
-        This is the heart of Felsenstein's algorithm.
-
-        Args:
-            tree: Phylogenetic tree
-            site_data: Nucleotides at this site (array of indices)
-
-        Returns:
-            Likelihood of this site
-        """
+        """Calculate likelihood for one alignment column."""
         # Calculate conditional likelihoods recursively
         def conditional_likelihood(node: TreeNode) -> np.ndarray:
             """
@@ -171,36 +121,14 @@ class LikelihoodCalculator:
 
 
 class BranchLengthOptimizer:
-    """
-    Optimize branch lengths using Brent's method.
-
-    Brent's method is a combination of:
-    - Golden section search (robust)
-    - Parabolic interpolation (fast when near optimum)
-
-    For each branch, we find the length that maximizes likelihood.
-    """
+    """Optimize branch lengths using Brent's method."""
 
     def __init__(self, calculator: LikelihoodCalculator):
-        """
-        Initialize optimizer.
-
-        Args:
-            calculator: Likelihood calculator
-        """
+        """Initialize optimizer."""
         self.calculator = calculator
 
     def optimize_branch_lengths(self, tree: TreeNode, verbose: bool = False) -> float:
-        """
-        Optimize all branch lengths in tree.
-
-        Args:
-            tree: Tree to optimize
-            verbose: Print progress
-
-        Returns:
-            Final log-likelihood
-        """
+        """Optimize all branch lengths in tree."""
         improved = True
         iterations = 0
         max_iterations = 10
@@ -274,37 +202,15 @@ class BranchLengthOptimizer:
 
 
 class NNISearcher:
-    """
-    Tree topology search using Nearest Neighbor Interchange (NNI).
-
-    NNI is the simplest tree rearrangement:
-    - For each internal branch, try swapping subtrees
-    - Accept move if likelihood improves
-    - Repeat until no improvement
-    """
+    """Tree topology search using Nearest Neighbor Interchange (NNI)."""
 
     def __init__(self, calculator: LikelihoodCalculator, optimizer: BranchLengthOptimizer):
-        """
-        Initialize NNI searcher.
-
-        Args:
-            calculator: Likelihood calculator
-            optimizer: Branch length optimizer
-        """
+        """Initialize NNI searcher."""
         self.calculator = calculator
         self.optimizer = optimizer
 
     def search(self, initial_tree: TreeNode, verbose: bool = False) -> Tuple[TreeNode, float]:
-        """
-        Perform NNI tree search.
-
-        Args:
-            initial_tree: Starting tree topology
-            verbose: Print progress
-
-        Returns:
-            (best_tree, log_likelihood)
-        """
+        """Perform NNI tree search."""
         current_tree = initial_tree
         current_logL = self.calculator.calculate_likelihood(current_tree)
 
@@ -345,15 +251,7 @@ class NNISearcher:
 
 
 class MLTreeBuilder:
-    """
-    Complete Maximum Likelihood tree inference - Level 2.
-
-    This combines all components:
-    1. GTR model
-    2. Likelihood calculation (Felsenstein)
-    3. Branch length optimization (Brent)
-    4. Tree search (NNI)
-    """
+    """Complete Maximum Likelihood tree inference with all components."""
 
     def __init__(self):
         """Initialize ML tree builder."""
@@ -363,31 +261,14 @@ class MLTreeBuilder:
         self.searcher = None
 
     def build_tree(self, sequences: List[Sequence], verbose: bool = True) -> Tuple[TreeNode, float]:
-        """
-        Build Maximum Likelihood tree.
-
-        Args:
-            sequences: Aligned sequences
-            verbose: Print progress
-
-        Returns:
-            (ml_tree, log_likelihood)
-        """
+        """Build Maximum Likelihood tree."""
         if verbose:
             print("=" * 60)
             print("Maximum Likelihood Tree Inference - Level 2")
             print("=" * 60)
 
-        # Step 1: Estimate GTR parameters
-        if verbose:
-            print("\nStep 1: Estimating GTR model parameters...")
-
         self.model = GTRModel()
         self.model.estimate_parameters(sequences)
-
-        # Step 2: Get initial tree from BioNJ
-        if verbose:
-            print("\nStep 2: Building initial tree (BioNJ)...")
 
         from rrna_phylo.methods.bionj import build_bionj_tree
         from rrna_phylo.distance.distance import calculate_distance_matrix
@@ -395,26 +276,11 @@ class MLTreeBuilder:
         dist_matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")
         initial_tree = build_bionj_tree(dist_matrix, ids)
 
-        # Step 3: Calculate initial likelihood
-        if verbose:
-            print("\nStep 3: Calculating initial likelihood...")
-
         self.calculator = LikelihoodCalculator(self.model, sequences)
         initial_logL = self.calculator.calculate_likelihood(initial_tree)
 
-        if verbose:
-            print(f"Initial log-likelihood: {initial_logL:.2f}")
-
-        # Step 4: Optimize branch lengths
-        if verbose:
-            print("\nStep 4: Optimizing branch lengths...")
-
         self.optimizer = BranchLengthOptimizer(self.calculator)
         optimized_logL = self.optimizer.optimize_branch_lengths(initial_tree, verbose=verbose)
-
-        # Step 5: NNI search (simplified for now)
-        if verbose:
-            print("\nStep 5: Tree topology search (NNI)...")
 
         self.searcher = NNISearcher(self.calculator, self.optimizer)
         final_tree, final_logL = self.searcher.search(initial_tree, verbose=verbose)
@@ -429,15 +295,6 @@ class MLTreeBuilder:
 
 
 def build_ml_tree_level2(sequences: List[Sequence], verbose: bool = True) -> Tuple[TreeNode, float]:
-    """
-    Convenience function to build ML tree (Level 2).
-
-    Args:
-        sequences: Aligned sequences
-        verbose: Print progress
-
-    Returns:
-        (ml_tree, log_likelihood)
-    """
+    """Build ML tree (Level 2)."""
     builder = MLTreeBuilder()
     return builder.build_tree(sequences, verbose=verbose)

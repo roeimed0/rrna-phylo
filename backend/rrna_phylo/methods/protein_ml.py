@@ -1,12 +1,4 @@
-"""
-Maximum Likelihood tree inference for proteins.
-
-This adapts the GTR+Gamma framework for proteins:
-- 20 amino acids (not 4 nucleotides)
-- 20x20 probability matrices (not 4x4)
-- Empirical substitution models (WAG, LG, JTT)
-- Gamma rate heterogeneity (same as DNA)
-"""
+"""Maximum Likelihood tree inference for protein sequences with empirical models."""
 
 import numpy as np
 from scipy.linalg import expm
@@ -19,12 +11,7 @@ from rrna_phylo.models.ml_tree_level3 import GammaRates, SitePatternCompressor
 
 
 class ProteinLikelihoodCalculator:
-    """
-    Calculate tree likelihood for protein sequences.
-
-    This is the protein equivalent of LikelihoodCalculatorLevel3,
-    but uses 20x20 matrices instead of 4x4.
-    """
+    """Calculate tree likelihood for protein sequences."""
 
     def __init__(
         self,
@@ -33,15 +20,7 @@ class ProteinLikelihoodCalculator:
         alpha: float = 1.0,
         n_categories: int = 4
     ):
-        """
-        Initialize protein likelihood calculator.
-
-        Args:
-            model: Protein substitution model (WAG, LG, or JTT)
-            sequences: Aligned protein sequences
-            alpha: Gamma shape parameter
-            n_categories: Number of gamma categories
-        """
+        """Initialize protein likelihood calculator."""
         self.model = model
         self.sequences = sequences
         self.n_seq = len(sequences)
@@ -56,15 +35,7 @@ class ProteinLikelihoodCalculator:
         self.seq_id_to_idx = {seq.display_name: i for i, seq in enumerate(sequences)}
 
     def calculate_likelihood(self, tree: TreeNode) -> float:
-        """
-        Calculate log-likelihood with protein model + Gamma.
-
-        Args:
-            tree: Phylogenetic tree
-
-        Returns:
-            Log-likelihood
-        """
+        """Calculate log-likelihood with protein model + Gamma."""
         log_likelihood = 0.0
 
         # Get rate matrices for all gamma categories
@@ -100,19 +71,7 @@ class ProteinLikelihoodCalculator:
         pattern: np.ndarray,
         Q: np.ndarray
     ) -> float:
-        """
-        Calculate likelihood for one site pattern (Felsenstein's algorithm).
-
-        This is the same as the DNA version, but with 20 states instead of 4.
-
-        Args:
-            tree: Tree
-            pattern: Site pattern (amino acid indices)
-            Q: Rate matrix for this category (20x20)
-
-        Returns:
-            Likelihood
-        """
+        """Calculate likelihood for one site pattern (Felsenstein's algorithm)."""
         # Felsenstein's pruning algorithm (20 states instead of 4)
         def conditional_likelihood(node: TreeNode) -> np.ndarray:
             """Calculate L[node][state] for all 20 states."""
@@ -168,19 +127,10 @@ class ProteinLikelihoodCalculator:
 
 
 class ProteinPatternCompressor:
-    """
-    Compress alignment by unique site patterns (protein version).
-
-    Same idea as DNA pattern compression, but with 20 amino acids.
-    """
+    """Compress alignment by unique site patterns (protein version)."""
 
     def __init__(self, sequences: List[Sequence]):
-        """
-        Initialize pattern compressor.
-
-        Args:
-            sequences: Aligned protein sequences
-        """
+        """Initialize pattern compressor."""
         self.sequences = sequences
         self.patterns = None
         self.pattern_counts = None
@@ -235,25 +185,11 @@ class ProteinBranchOptimizer:
     """Optimize branch lengths for protein likelihood."""
 
     def __init__(self, calculator: ProteinLikelihoodCalculator):
-        """
-        Initialize optimizer.
-
-        Args:
-            calculator: Protein likelihood calculator
-        """
+        """Initialize optimizer."""
         self.calculator = calculator
 
     def optimize_branch_lengths(self, tree: TreeNode, verbose: bool = False) -> float:
-        """
-        Optimize all branch lengths in tree.
-
-        Args:
-            tree: Tree to optimize
-            verbose: Print progress
-
-        Returns:
-            Final log-likelihood
-        """
+        """Optimize all branch lengths in tree."""
         improved = True
         iterations = 0
         max_iterations = 10
@@ -329,35 +265,15 @@ def build_protein_ml_tree(
     alpha: float = 1.0,
     verbose: bool = True
 ) -> Tuple[TreeNode, float]:
-    """
-    Build ML tree for protein sequences.
-
-    Args:
-        sequences: Aligned protein sequences
-        model_name: Protein model ("WAG", "LG", or "JTT")
-        alpha: Gamma shape parameter
-        verbose: Print progress
-
-    Returns:
-        (ml_tree, log_likelihood)
-    """
+    """Build ML tree for protein sequences."""
     if verbose:
         print("=" * 60)
         print("Maximum Likelihood Tree Inference - Proteins")
         print(f"{model_name}+Gamma Model with Site Pattern Compression")
         print("=" * 60)
 
-    # Step 1: Get protein model
-    if verbose:
-        print(f"\nStep 1: Loading {model_name} model...")
-        print(f"  Gamma shape (alpha): {alpha}")
-
     model = get_protein_model(model_name)
     model.estimate_frequencies(sequences)
-
-    # Step 2: Get initial tree (use protein distance)
-    if verbose:
-        print("\nStep 2: Building initial tree (BioNJ with Poisson distance)...")
 
     from rrna_phylo.distance.protein_distance import calculate_protein_distance_matrix
     from rrna_phylo.methods.bionj import build_bionj_tree
@@ -365,19 +281,8 @@ def build_protein_ml_tree(
     dist_matrix, ids = calculate_protein_distance_matrix(sequences, model="poisson")
     initial_tree = build_bionj_tree(dist_matrix, ids)
 
-    # Step 3: Create likelihood calculator
-    if verbose:
-        print(f"\nStep 3: Setting up {model_name}+Gamma likelihood...")
-
     calculator = ProteinLikelihoodCalculator(model, sequences, alpha=alpha)
     initial_logL = calculator.calculate_likelihood(initial_tree)
-
-    if verbose:
-        print(f"Initial log-likelihood: {initial_logL:.2f}")
-
-    # Step 4: Optimize branch lengths
-    if verbose:
-        print("\nStep 4: Optimizing branch lengths...")
 
     optimizer = ProteinBranchOptimizer(calculator)
     final_logL = optimizer.optimize_branch_lengths(initial_tree, verbose=verbose)
@@ -389,41 +294,3 @@ def build_protein_ml_tree(
         print("=" * 60)
 
     return initial_tree, final_logL
-
-
-# Example usage
-if __name__ == "__main__":
-    print("\n" + "=" * 60)
-    print("PROTEIN MAXIMUM LIKELIHOOD TREES")
-    print("=" * 60)
-
-    # Create test protein sequences
-    sequences = [
-        Sequence("seq1", "Protein 1", "MKTAYIAKQRQISFVK"),
-        Sequence("seq2", "Protein 2", "MKTAYIAKQRQISFVK"),  # Identical
-        Sequence("seq3", "Protein 3", "MKTAYIAKQRQIAFVK"),  # 1 diff (S->A)
-        Sequence("seq4", "Protein 4", "MKTAYIAKQRQIAFVR"),  # 2 diffs
-    ]
-
-    print("\nTest sequences:")
-    for seq in sequences:
-        print(f"  {seq.id}: {seq.sequence}")
-
-    # Build ML tree with WAG model
-    print("\n\nBuilding ML tree with WAG+Gamma...")
-    tree, logL = build_protein_ml_tree(sequences, model_name="WAG", alpha=1.0, verbose=True)
-
-    print(f"\nFinal tree (Newick): {tree.to_newick()};")
-    print(f"Log-likelihood: {logL:.2f}")
-
-    print("\n" + "=" * 60)
-    print("PROTEIN ML TREES WORKING!")
-    print("=" * 60)
-    print("\nWhat we achieved:")
-    print("  [OK] 20x20 probability matrices")
-    print("  [OK] Felsenstein's algorithm for proteins")
-    print("  [OK] WAG/LG/JTT empirical models")
-    print("  [OK] Gamma rate heterogeneity")
-    print("  [OK] Site pattern compression")
-    print("\nProtein phylogenetics now fully supported!")
-    print("=" * 60)

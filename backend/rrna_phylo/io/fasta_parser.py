@@ -28,15 +28,7 @@ class Sequence:
 
     @property
     def species_name(self) -> str:
-        """
-        Extract species name from description.
-
-        For taxonomy descriptions like "Bacteria;...;Genus;Species strain",
-        returns the last part (species + strain).
-
-        Returns:
-            Species name or empty string if not found
-        """
+        """Extract species name from description."""
         if not self.description:
             return ""
 
@@ -58,36 +50,32 @@ class Sequence:
 
     @property
     def main_accession(self) -> str:
-        """
-        Extract main accession number from ID.
-
-        For IDs like "AE006468.4100145.4101688", returns "AE006468"
-        For IDs like "U00096.223771.225312", returns "U00096"
-
-        Returns:
-            Main accession number (first part before dot)
-        """
+        """Extract main accession number from ID (first part before dot)."""
         if '.' in self.id:
             return self.id.split('.')[0]
         return self.id
 
     @property
     def display_name(self) -> str:
-        """
-        Get display name for tree visualization.
-
-        Returns species name with main accession in parentheses,
-        e.g., "Bacillus subtilis (AJ276351)"
-
-        If assign_unique_display_names() was called, returns the unique name
-        with counter (e.g., "Escherichia coli (U00096) #1")
-
-        Falls back to ID if no species name available.
-        """
+        """Get display name for tree visualization (species name + accession)."""
         # Return unique name if it was assigned
         if self._unique_display_name:
             return self._unique_display_name
 
+        # Check if ID follows custom format: "common_name(species_name)|gene|accession"
+        if '(' in self.id and ')' in self.id and '|' in self.id:
+            # Extract species from parentheses
+            start = self.id.index('(')
+            end = self.id.index(')')
+            species = self.id[start+1:end].replace('_', ' ')
+
+            # Extract accession (last part after final |)
+            parts = self.id.split('|')
+            accession = parts[-1] if len(parts) > 0 else ''
+
+            return f"{species} ({accession})"
+
+        # Fallback to original logic for standard FASTA IDs
         # Use species name with main accession in parentheses
         # NOTE: Do NOT add quotes here - they will be added by to_newick() if needed
         species = self.species_name
@@ -106,12 +94,7 @@ class Sequence:
         return seq_chars.issubset(nucleotide_chars)
 
     def is_protein(self) -> bool:
-        """
-        Check if sequence is protein (amino acid).
-
-        Returns True only if it contains protein-specific characters
-        not found in nucleotides (E, F, I, L, P, Q, etc.)
-        """
+        """Check if sequence is protein (amino acid)."""
         nucleotide_only = set('ACGTUN-.')
         protein_specific = set('EFHIKLMPQRSVWY*')
         seq_chars = set(self.sequence.upper())
@@ -134,19 +117,7 @@ class FastaParser:
     """Parse FASTA format files."""
 
     def parse(self, filepath: str) -> List[Sequence]:
-        """
-        Parse FASTA file and return list of sequences.
-
-        Args:
-            filepath: Path to FASTA file
-
-        Returns:
-            List of Sequence objects
-
-        Raises:
-            FileNotFoundError: If file doesn't exist
-            ValueError: If file is not valid FASTA format
-        """
+        """Parse FASTA file and return list of sequences."""
         sequences = []
         current_id = None
         current_desc = None
@@ -205,15 +176,7 @@ class FastaParser:
         return sequences
 
     def validate_sequences(self, sequences: List[Sequence]) -> Dict[str, any]:
-        """
-        Validate a list of sequences for phylogenetic analysis.
-
-        Args:
-            sequences: List of Sequence objects
-
-        Returns:
-            Dictionary with validation results
-        """
+        """Validate sequences for phylogenetic analysis."""
         if not sequences:
             return {
                 'valid': False,
@@ -260,6 +223,32 @@ class FastaParser:
 
         seq_type = 'nucleotide' if is_nucleotide else 'protein'
 
+        # Check for duplicate species (multiple sequences from same species)
+        species_names = [seq.species_name for seq in sequences]
+        species_counts = {}
+        for species in species_names:
+            if species:  # Skip empty species names
+                species_counts[species] = species_counts.get(species, 0) + 1
+
+        # Find species with multiple sequences
+        duplicates = {sp: count for sp, count in species_counts.items() if count > 1}
+        has_duplicates = len(duplicates) > 0
+
+        # Create warning message if duplicates exist
+        duplicate_warning = None
+        if has_duplicates:
+            dup_list = [f"{sp} (×{count})" for sp, count in sorted(duplicates.items(), key=lambda x: -x[1])]
+            duplicate_warning = (
+                f"WARNING: Found {len(duplicates)} species with multiple sequences. "
+                f"This can cause problems when comparing between different species:\n"
+                f"  - Near-zero branch lengths between sequences from same species\n"
+                f"  - Distorted tree topology and branch length estimates\n"
+                f"  - Inflated tip counts making trees harder to interpret\n\n"
+                f"Duplicate species: {', '.join(dup_list[:5])}"
+                + (f" and {len(dup_list) - 5} more..." if len(dup_list) > 5 else "")
+                + f"\n\nRECOMMENDATION: Use only 1 sequence per species for inter-species comparisons."
+            )
+
         return {
             'valid': True,
             'count': len(sequences),
@@ -268,44 +257,21 @@ class FastaParser:
             'lengths': lengths,
             'min_length': min(lengths),
             'max_length': max(lengths),
-            'needs_alignment': not all_same_length
+            'needs_alignment': not all_same_length,
+            'has_duplicate_species': has_duplicates,
+            'duplicate_species_count': len(duplicates),
+            'duplicate_warning': duplicate_warning
         }
 
 
 def parse_fasta(filepath: str) -> List[Sequence]:
-    """
-    Convenience function to parse FASTA file.
-
-    Args:
-        filepath: Path to FASTA file
-
-    Returns:
-        List of Sequence objects
-    """
+    """Parse FASTA file."""
     parser = FastaParser()
     return parser.parse(filepath)
 
 
 def assign_unique_display_names(sequences: List[Sequence]) -> List[Sequence]:
-    """
-    Assign unique display names to sequences, adding counters for duplicates.
-
-    When multiple sequences have the same species name, adds #1, #2, etc.
-    to differentiate them in tree visualizations.
-
-    Args:
-        sequences: List of Sequence objects
-
-    Returns:
-        Same list of sequences (modified in place)
-
-    Example:
-        >>> seqs = parse_fasta("sequences.fasta")
-        >>> assign_unique_display_names(seqs)
-        # Now seqs will have unique display names like:
-        # "Escherichia coli (U00096) #1"
-        # "Escherichia coli (U00096) #2"
-    """
+    """Assign unique display names with counters for duplicate species."""
     # Count occurrences of each species name
     species_counts = {}
     species_current = {}

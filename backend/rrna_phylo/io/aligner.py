@@ -36,7 +36,7 @@ class MuscleAligner:
             return False
 
     def align(self, input_fasta: str, output_fasta: str, max_iterations: Optional[int] = None) -> List[Sequence]:
-        """Align sequences in a FASTA file and return Sequence objects."""
+        """Align sequences in a FASTA file."""
         # v5 uses -align / -output
         if self.version_major >= 5:
             cmd = [self.muscle_executable, "-align", input_fasta, "-output", output_fasta]
@@ -46,7 +46,7 @@ class MuscleAligner:
         if max_iterations is not None:
             cmd.extend(["-maxiters", str(max_iterations)])
 
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
         if r.returncode != 0:
             raise RuntimeError(f"MUSCLE alignment failed:\nSTDOUT:\n{r.stdout}\nSTDERR:\n{r.stderr}")
 
@@ -54,7 +54,7 @@ class MuscleAligner:
         return parser.parse(output_fasta)
 
     def align_sequences(self, sequences: List[Sequence], output_file: str) -> List[Sequence]:
-        """Align a list of Sequence objects."""
+        """Align a list of Sequence objects in their original order."""
         with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".fasta") as tmp:
             for seq in sequences:
                 tmp.write(f">{seq.id} {seq.description}\n{seq.sequence}\n")
@@ -62,6 +62,19 @@ class MuscleAligner:
 
         aligned = self.align(tmp_path, output_file)
         os.remove(tmp_path)
+
+        # CRITICAL FIX: MUSCLE reorders sequences alphabetically!
+        # We must restore original input order to prevent taxon mismatches
+        # Create mapping from ID to aligned sequence
+        id_to_aligned_seq = {seq.id: seq for seq in aligned}
+
+        # Re-sort to match original input order
+        aligned_sorted = []
+        for original_seq in sequences:
+            if original_seq.id in id_to_aligned_seq:
+                aligned_sorted.append(id_to_aligned_seq[original_seq.id])
+            else:
+                raise ValueError(f"Sequence {original_seq.id} not found in aligned output!")
 
         # Preserve unique display names from original sequences
         # Create a mapping from id to unique_display_name
@@ -71,8 +84,8 @@ class MuscleAligner:
                 id_to_unique_name[seq.id] = seq._unique_display_name
 
         # Apply unique names to aligned sequences
-        for aligned_seq in aligned:
+        for aligned_seq in aligned_sorted:
             if aligned_seq.id in id_to_unique_name:
                 aligned_seq._unique_display_name = id_to_unique_name[aligned_seq.id]
 
-        return aligned
+        return aligned_sorted

@@ -1,20 +1,4 @@
-"""
-Branch length optimization for phylogenetic trees.
-
-After topology changes (like NNI swaps), branch lengths must be re-optimized
-to maximize likelihood under the new topology.
-
-Key Insight:
-===========
-When NNI swaps the tree topology, the old branch lengths were optimized for
-the OLD topology. Without re-optimization, branches gradually collapse to zero
-as the topology changes, creating invalid star-like trees.
-
-Solution:
-=========
-After each accepted NNI swap, re-optimize all branch lengths using coordinate
-descent (optimize each branch individually, iterate until convergence).
-"""
+"""Re-optimize branch lengths after topology changes to maintain valid trees."""
 
 from typing import List, Optional
 import numpy as np
@@ -33,29 +17,11 @@ def optimize_single_branch(
     max_length: float = 10.0,
     calculator = None
 ) -> float:
-    """
-    Optimize the branch length leading to a single node.
-
-    Uses Brent's method (scipy.optimize.minimize_scalar) to find the branch
-    length that maximizes likelihood.
-
-    Args:
-        tree: Full tree (root node)
-        node: Node whose incoming branch length to optimize
-        sequences: Aligned sequences
-        alpha: Gamma parameter for rate heterogeneity
-        min_length: Minimum branch length (prevents zero collapse)
-        max_length: Maximum branch length (prevents infinite branches)
-        calculator: Optional cached LikelihoodCalculatorLevel3 (HUGE speedup!)
-
-    Returns:
-        Optimized branch length
-    """
+    """Optimize the branch length leading to a single node using Brent's method."""
     # Save original length (in case optimization fails)
     original_length = node.distance if hasattr(node, 'distance') else 0.01
 
     def neg_log_likelihood(length):
-        """Negative log-likelihood for minimization."""
         # Set branch length (constrained to valid range)
         node.distance = max(min_length, min(length, max_length))
 
@@ -94,25 +60,7 @@ def optimize_all_branch_lengths(
     max_iterations: int = 3,
     verbose: bool = False
 ) -> float:
-    """
-    Optimize all branch lengths in a tree.
-
-    Uses coordinate descent: optimize each branch in turn, repeat until convergence.
-
-    This is the "full" optimization - iterates multiple times through all branches.
-    Good for final tree optimization, but slower than single-pass.
-
-    Args:
-        tree: Tree with topology to optimize
-        sequences: Aligned sequences
-        alpha: Gamma parameter
-        min_length: Minimum branch length (prevents zero collapse)
-        max_iterations: Number of passes through all branches
-        verbose: Print progress
-
-    Returns:
-        Final log-likelihood after optimization
-    """
+    """Optimize all branch lengths using coordinate descent over multiple iterations."""
     if verbose:
         print("  Optimizing all branch lengths (full)...")
 
@@ -154,28 +102,7 @@ def optimize_branch_lengths_fast(
     verbose: bool = False,
     calculator = None
 ) -> float:
-    """
-    Fast single-pass branch length optimization.
-
-    Optimizes each branch once (no iteration). Faster but less accurate than
-    full optimization. Good enough for NNI search where topology is changing
-    frequently.
-
-    PERFORMANCE: Accepts optional calculator to avoid recreating it!
-    Critical for NNI which evaluates dozens of neighbors - without this,
-    each neighbor creates its own calculator (54 calculators for 87 sequences!)
-
-    Args:
-        tree: Tree to optimize
-        sequences: Aligned sequences
-        alpha: Gamma parameter
-        min_length: Minimum branch length
-        verbose: Print progress
-        calculator: Optional cached LikelihoodCalculatorLevel3 (CRITICAL for NNI performance!)
-
-    Returns:
-        Final log-likelihood
-    """
+    """Fast single-pass branch optimization (for topology search algorithms)."""
     if verbose:
         print("  Re-optimizing branch lengths (fast)...")
 
@@ -224,19 +151,7 @@ def optimize_branch_lengths_fast(
 
 
 def check_for_zero_branches(tree: TreeNode, verbose: bool = False) -> int:
-    """
-    Count zero-length branches in a tree.
-
-    Useful for debugging NNI issues. A properly optimized tree should have
-    very few (ideally zero) branches with exactly 0.0 length.
-
-    Args:
-        tree: Tree to check
-        verbose: Print details about zero branches
-
-    Returns:
-        Number of branches with exactly 0.0 length
-    """
+    """Count zero-length branches in a tree (debugging for tree validity)."""
     zero_branches = []
 
     def check_node(node):

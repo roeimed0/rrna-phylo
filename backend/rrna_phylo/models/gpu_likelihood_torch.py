@@ -1,17 +1,4 @@
-"""
-Patched PyTorch GPU-accelerated likelihood calculation for phylogenetic trees.
-
-Public API preserved:
- - TorchGPULikelihoodCalculator
- - compute_log_likelihood_gpu
-
-Fixes:
- - Per-node scaling (log-scale per pattern)
- - Uses torch.linalg.matrix_exp for P matrices (consistent)
- - Discrete gamma via quantiles (if scipy available) or midpoint fallback
- - Pattern compression moved to CPU then to device
- - P cache keyed by rounded (branch_length * rate)
-"""
+"""PyTorch GPU-accelerated likelihood calculation for phylogenetic trees."""
 
 from typing import List, Optional, Dict, Tuple
 import math
@@ -66,12 +53,7 @@ def _postorder_nodes(root: TreeNode) -> List[TreeNode]:
 
 # ---------- Torch GPU likelihood calculator ----------
 class TorchGPULikelihoodCalculator:
-    """
-    Torch-based GPU likelihood calculator.
-    - Patterns compressed on CPU then moved to device.
-    - Per-node normalization (log-scale per pattern) implemented.
-    - compute_likelihood(tree) -> float
-    """
+    """Torch-based GPU likelihood calculator with pattern compression and per-node scaling."""
 
     def __init__(
         self,
@@ -156,12 +138,7 @@ class TorchGPULikelihoodCalculator:
             print(f"[TorchGPU] device={dev}, n_patterns={self.n_patterns}, n_cat={self.n_categories}")
 
     def _collect_postorder(self, root: TreeNode) -> List[TreeNode]:
-        """
-        Collect all nodes in postorder (children before parents).
-        This eliminates Python recursion overhead in tight loops.
-
-        CRITICAL: This is computed once and cached until topology changes.
-        """
+        """Collect nodes in postorder (children before parents) for topology traversal."""
         result = []
 
         def _traverse(node):
@@ -208,10 +185,7 @@ class TorchGPULikelihoodCalculator:
             print(f"Site pattern compression: {seq_len} -> {self.n_patterns} patterns ({seq_len/self.n_patterns:.1f}x)")
 
     def _gamma_mean_truncated(self, a: float, low: float, high: float) -> float:
-        """
-        Compute mean of Gamma(a, scale=1/a) truncated to (low, high).
-        COPIED FROM CPU implementation to ensure identical results!
-        """
+        """Compute mean of truncated Gamma(a, scale=1/a) on (low, high)."""
         from scipy.special import gammainc, gamma as gamma_func
 
         L = a * low
@@ -351,16 +325,7 @@ class TorchGPULikelihoodCalculator:
 
 
     def _conditional_likelihood_tensor(self, node: TreeNode, rate_idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Return (L_tensor, log_scale_vector) for node at SPECIFIC rate category.
-        - L_tensor: shape (n_patterns, 4), normalized per pattern (rows sum ~1)
-        - log_scale_vector: shape (n_patterns,), accumulated log-scale for that node's subtree
-        - rate_idx: which gamma rate category to use
-
-        CRITICAL FIX: Must compute conditional likelihoods SEPARATELY for each rate category,
-        then average the final pattern likelihoods. Cannot average P matrices during pruning!
-        This matches the CPU implementation.
-        """
+        """Return (L_tensor, log_scale_vector) for node at specific rate category."""
         cache_key = f'_cl_cache_r{rate_idx}'
         if hasattr(node, cache_key):
             cached = getattr(node, cache_key)
@@ -443,22 +408,12 @@ class TorchGPULikelihoodCalculator:
 
 
     def mark_topology_changed(self):
-        """
-        Mark that tree topology has changed (e.g., after NNI swap).
-        Next compute_likelihood() call will clear internal node caches and rebuild postorder.
-        """
+        """Mark that tree topology has changed and caches need invalidation."""
         self._needs_cache_clear = True
         self._postorder_cache = None  # Invalidate cached traversal
 
     def compute_likelihood(self, tree: TreeNode) -> float:
-        """
-        Compute log-likelihood for the input tree.
-
-        CRITICAL FIX: Compute separate conditional likelihoods for EACH rate category,
-        then average the final pattern likelihoods. This matches the CPU implementation.
-
-        Returns Python float.
-        """
+        """Compute log-likelihood for the input tree."""
         # PERFORMANCE FIX: Only clear caches when topology has changed!
         # This avoids recomputing internal nodes when just testing different swaps.
         # ALSO: Use flattened postorder to avoid recursion overhead

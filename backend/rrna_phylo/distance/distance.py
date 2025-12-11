@@ -1,8 +1,4 @@
-"""
-Calculate pairwise evolutionary distances from aligned sequences.
-
-Uses Jukes-Cantor correction - the gold standard for phylogenetics.
-"""
+"""Calculate pairwise evolutionary distances using Jukes-Cantor correction."""
 
 import math
 from typing import List, Tuple

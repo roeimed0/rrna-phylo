@@ -1,9 +1,4 @@
-"""
-Dataset analyzer for intelligent phylogenetic method selection.
-
-This module analyzes distance matrices and alignment quality to determine
-which tree-building methods are appropriate for the dataset.
-"""
+"""Analyze datasets to recommend phylogenetic methods."""
 
 from typing import List, Tuple, Dict, Optional
 import numpy as np
@@ -42,18 +37,7 @@ def analyze_distance_matrix(
     saturation_threshold: float = 0.75,
     high_divergence_threshold: float = 0.5
 ) -> Tuple[Dict[str, float], List[str]]:
-    """
-    Analyze distance matrix for quality and divergence patterns.
-
-    Args:
-        dist_matrix: NxN distance matrix
-        sequence_ids: List of sequence IDs
-        saturation_threshold: p-distance threshold for saturation (default 0.75, Jukes-Cantor limit)
-        high_divergence_threshold: Threshold for "high divergence" warning
-
-    Returns:
-        Tuple of (statistics_dict, warnings_list)
-    """
+    """Analyze distance matrix for quality and divergence patterns."""
     n = len(dist_matrix)
 
     # Extract upper triangle (excluding diagonal)
@@ -139,21 +123,7 @@ def recommend_methods(
     max_bionj_mean_distance: float = 0.4,
     verbose: bool = True
 ) -> DatasetAnalysis:
-    """
-    Analyze dataset and recommend appropriate phylogenetic methods.
-
-    Args:
-        sequences: Aligned sequences
-        dist_matrix: Pre-computed distance matrix (optional)
-        sequence_ids: Sequence IDs matching dist_matrix (optional)
-        max_bionj_sequences: Maximum sequences for BioNJ (performance limit, default 50)
-        max_bionj_saturation_pct: Maximum % saturated distances for BioNJ (default 3.0%)
-        max_bionj_mean_distance: Maximum mean distance for BioNJ (default 0.4)
-        verbose: Print analysis report
-
-    Returns:
-        DatasetAnalysis object with recommendations
-    """
+    """Analyze dataset and recommend appropriate phylogenetic methods."""
     n_sequences = len(sequences)
     alignment_length = sequences[0].aligned_length if sequences else 0
 
@@ -245,50 +215,3 @@ def recommend_methods(
         print("=" * 80)
 
     return analysis
-
-
-# Example usage
-if __name__ == "__main__":
-    from rrna_phylo.io.fasta_parser import Sequence
-
-    print("=" * 80)
-    print("DATASET ANALYZER - EXAMPLES")
-    print("=" * 80)
-
-    # Example 1: Small, closely related sequences (all methods suitable)
-    print("\nExample 1: Small closely-related dataset")
-    print("-" * 80)
-
-    seqs1 = [
-        Sequence("s1", "Seq1", "ATGCATGCATGC"),
-        Sequence("s2", "Seq2", "ATGCATGCATCC"),
-        Sequence("s3", "Seq3", "ATGCATCCATGC"),
-        Sequence("s4", "Seq4", "ATCCATGCATGC"),
-    ]
-
-    analysis1 = recommend_methods(seqs1, verbose=True)
-    print(f"Recommended: {analysis1.recommended_methods}")
-
-    # Example 2: Simulated divergent dataset (BioNJ not suitable)
-    print("\n\nExample 2: Large phylogenetically diverse dataset")
-    print("-" * 80)
-
-    # Create distance matrix with high saturation
-    n = 90
-    dist_matrix = np.random.rand(n, n) * 0.8  # High divergence
-    dist_matrix = (dist_matrix + dist_matrix.T) / 2  # Make symmetric
-    np.fill_diagonal(dist_matrix, 0)
-
-    # Add some saturated distances
-    dist_matrix[0:10, 50:60] = 1.0  # Completely divergent
-    dist_matrix[50:60, 0:10] = 1.0
-
-    seqs2 = [Sequence(f"s{i}", f"Species{i}", "ATGC" * 400) for i in range(n)]
-    sequence_ids = [f"s{i}" for i in range(n)]
-
-    analysis2 = recommend_methods(seqs2, dist_matrix=dist_matrix, sequence_ids=sequence_ids, verbose=True)
-    print(f"Recommended: {analysis2.recommended_methods}")
-
-    print("\n" + "=" * 80)
-    print("EXAMPLES COMPLETE!")
-    print("=" * 80)

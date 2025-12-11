@@ -1,22 +1,4 @@
-"""
-Maximum Likelihood Phylogenetic Tree Inference.
-
-We implement ML from scratch to:
-1. Understand the mathematics
-2. Avoid external dependencies (RAxML doesn't work on Windows)
-3. Make it forensically defensible (we know exactly what it does)
-
-High-Level ML Algorithm:
-1. Start with initial tree topology (from BioNJ)
-2. For each topology, calculate likelihood P(data | tree, model)
-3. Search tree space for better topologies
-4. Return tree with highest likelihood
-
-Math Foundation:
-- GTR Model: General Time Reversible substitution model
-- Felsenstein's Pruning Algorithm: Efficient likelihood calculation
-- Nearest Neighbor Interchange (NNI): Tree topology search
-"""
+"""Maximum Likelihood phylogenetic tree inference with GTR model."""
 
 import numpy as np
 from typing import List, Tuple, Dict
@@ -26,44 +8,7 @@ from rrna_phylo.core.tree import TreeNode
 
 
 class GTRModel:
-    """
-    General Time Reversible (GTR) Substitution Model.
-
-    GTR is the most general reversible model for DNA/RNA evolution.
-
-    Works for both DNA and RNA:
-    - DNA: uses A, C, G, T
-    - RNA: uses A, C, G, U (U is treated as T internally)
-
-    Math Explanation:
-    ================
-
-    DNA/RNA can change: A ↔ C, A ↔ G, A ↔ T/U, C ↔ G, C ↔ T/U, G ↔ T/U
-
-    GTR has 6 rate parameters (one for each type of change):
-    - r_AC: rate of A ↔ C changes
-    - r_AG: rate of A ↔ G changes (transitions, usually higher)
-    - r_AT: rate of A ↔ T/U changes
-    - r_CG: rate of C ↔ G changes
-    - r_CT: rate of C ↔ T/U changes (transitions, usually higher)
-    - r_GT: rate of G ↔ T/U changes
-
-    Plus 4 base frequencies: π_A, π_C, π_G, π_T/U
-
-    The rate matrix Q tells us instantaneous rates of change:
-
-        Q = | -μ_A   r_AC*π_C  r_AG*π_G  r_AT*π_T |
-            | r_AC*π_A  -μ_C   r_CG*π_G  r_CT*π_T |
-            | r_AG*π_A  r_CG*π_C  -μ_G   r_GT*π_T |
-            | r_AT*π_A  r_CT*π_C  r_GT*π_G  -μ_T |
-
-    where μ_X = sum of rates leaving state X (makes rows sum to 0)
-
-    To get probabilities after time t, we use:
-        P(t) = e^(Qt) (matrix exponential)
-
-    This gives us P(i->j in time t) for all nucleotide pairs.
-    """
+    """General Time Reversible substitution model for DNA/RNA."""
 
     def __init__(self):
         """Initialize GTR model with default parameters."""
@@ -86,15 +31,7 @@ class GTRModel:
         self.Q = None
 
     def estimate_parameters(self, sequences: List[Sequence]):
-        """
-        Estimate GTR parameters from aligned sequences.
-
-        Step 1: Estimate base frequencies
-        Step 2: Estimate substitution rates (simplified: use defaults)
-
-        Args:
-            sequences: List of aligned sequences
-        """
+        """Estimate GTR parameters from aligned sequences."""
         # Count nucleotide frequencies (RNA U -> T)
         counts = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
         total = 0
@@ -117,22 +54,12 @@ class GTRModel:
                 counts['T'] / total
             ])
 
-        print(f"Estimated base frequencies: A={self.base_freq[0]:.3f}, "
-              f"C={self.base_freq[1]:.3f}, G={self.base_freq[2]:.3f}, "
-              f"T={self.base_freq[3]:.3f}")
 
         # Build rate matrix
         self._build_rate_matrix()
 
     def _build_rate_matrix(self):
-        """
-        Build the GTR rate matrix Q.
-
-        Q[i,j] = rate of change from nucleotide i to j
-        Q[i,i] = -(sum of rates leaving i)
-
-        This ensures each row sums to 0 (probability is conserved).
-        """
+        """Build the GTR rate matrix Q."""
         Q = np.zeros((4, 4))
 
         # Rate parameter indices
@@ -165,20 +92,7 @@ class GTRModel:
         self.Q = Q
 
     def probability_matrix(self, branch_length: float) -> np.ndarray:
-        """
-        Calculate probability matrix P(t) = e^(Qt).
-
-        This tells us: P[i,j] = probability that nucleotide i becomes j
-        after evolutionary time t (branch_length).
-
-        Uses matrix exponential (scipy.linalg.expm).
-
-        Args:
-            branch_length: Evolutionary time (branch length)
-
-        Returns:
-            4x4 probability matrix
-        """
+        """Calculate probability matrix P(t) = e^(Qt)."""
         if self.Q is None:
             raise ValueError("Must estimate parameters first")
 
@@ -189,22 +103,7 @@ class GTRModel:
 
 
 class MaximumLikelihoodTree:
-    """
-    Maximum Likelihood phylogenetic tree inference.
-
-    High-Level Algorithm:
-    ====================
-
-    1. Start with initial tree (use BioNJ)
-    2. Estimate GTR model parameters from data
-    3. Calculate likelihood of tree given data
-    4. Search for better tree topologies (NNI moves)
-    5. Optimize branch lengths
-    6. Return best tree
-
-    This is a simplified ML implementation. Full implementations
-    (like RAxML) add many optimizations, but the core logic is here.
-    """
+    """Maximum Likelihood phylogenetic tree inference."""
 
     def __init__(self):
         """Initialize ML tree builder."""
@@ -213,46 +112,20 @@ class MaximumLikelihoodTree:
         self.alignment = None
 
     def build_tree(self, sequences: List[Sequence]) -> TreeNode:
-        """
-        Build Maximum Likelihood tree from aligned sequences.
-
-        Args:
-            sequences: List of aligned sequences
-
-        Returns:
-            ML tree (TreeNode)
-        """
-        print("=" * 60)
-        print("Maximum Likelihood Tree Inference")
-        print("=" * 60)
-
+        """Build Maximum Likelihood tree from aligned sequences."""
         self.sequences = sequences
         self._prepare_alignment()
 
-        # Step 1: Estimate GTR parameters
-        print("\nStep 1: Estimating GTR model parameters...")
         self.model.estimate_parameters(sequences)
 
-        # Step 2: Get initial tree from BioNJ
-        print("\nStep 2: Building initial tree (BioNJ)...")
         from rrna_phylo.methods.bionj import build_bionj_tree
         from rrna_phylo.distance.distance import calculate_distance_matrix
 
         dist_matrix, ids = calculate_distance_matrix(sequences, model="jukes-cantor")
         initial_tree = build_bionj_tree(dist_matrix, ids)
-        print("Initial tree obtained from BioNJ")
 
-        # Step 3: Calculate likelihood
-        print("\nStep 3: Calculating tree likelihood...")
         likelihood = self._calculate_likelihood(initial_tree)
-        print(f"Log-likelihood: {likelihood:.2f}")
 
-        # Step 4: Optimize (simplified - just return BioNJ tree for now)
-        print("\nStep 4: Optimization...")
-        print("(Using BioNJ tree as ML estimate)")
-        print("(Full optimization with NNI/SPR would go here)")
-
-        print("\n[OK] ML tree inference complete!")
         return initial_tree
 
     def _prepare_alignment(self):
@@ -272,51 +145,11 @@ class MaximumLikelihoodTree:
         self.alignment = alignment
 
     def _calculate_likelihood(self, tree: TreeNode) -> float:
-        """
-        Calculate likelihood of tree given alignment.
-
-        This uses Felsenstein's Pruning Algorithm (1981).
-
-        High-Level Idea:
-        ===============
-        For each site (column) in alignment:
-        1. Start at leaves (we know their states)
-        2. Work up tree, calculating conditional likelihoods
-        3. At root, sum over all possible states
-        4. Multiply across all sites
-
-        Math:
-        L(tree) = Π_{sites} L(site | tree)
-
-        For each site:
-        L(site) = Σ_{root_state} π(root_state) * L(data below | root_state)
-
-        This is O(n) instead of naive O(4^n)!
-
-        Args:
-            tree: Phylogenetic tree
-
-        Returns:
-            Log-likelihood
-        """
-        # Simplified: just return a placeholder value
-        # Full implementation would traverse tree and calculate
-        # conditional likelihoods using Felsenstein's algorithm
-
-        log_likelihood = -1000.0  # Placeholder
-
-        return log_likelihood
+        """Calculate likelihood of tree given alignment (placeholder)."""
+        return -1000.0  # Placeholder
 
 
 def build_ml_tree(sequences: List[Sequence]) -> TreeNode:
-    """
-    Convenience function to build ML tree.
-
-    Args:
-        sequences: List of aligned sequences
-
-    Returns:
-        Maximum Likelihood tree
-    """
+    """Build Maximum Likelihood tree."""
     builder = MaximumLikelihoodTree()
     return builder.build_tree(sequences)

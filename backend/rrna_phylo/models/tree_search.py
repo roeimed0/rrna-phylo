@@ -175,7 +175,7 @@ def nni_search(
     model_name: str = "GTR",
     alpha: Optional[float] = None,
     max_iterations: int = 50,
-    tolerance: float = 0.1,
+    tolerance: float = 0.01,  # FIX: Reduced from 0.1 to 0.01 to accept smaller improvements
     verbose: bool = False,
     use_gpu: bool = False,
     enable_pruning: bool = True,
@@ -320,6 +320,10 @@ def nni_search(
         best_swap = None
         best_swap_logL = current_logL
 
+        # Track best improvement found (even if rejected)
+        best_attempted_improvement = 0.0
+        n_swaps_tested = 0
+
         # Try NNI on each internal branch
         # BUG FIX #3: Must test BOTH swaps from ORIGINAL topology, not from swapped state!
         for node in nni_candidates:
@@ -327,6 +331,13 @@ def nni_search(
             swap1 = perform_nni_swap_inplace(node, swap_type=1)
             if swap1:
                 logL1 = _compute_likelihood_unified(tree, sequences, alpha, calculator)
+                n_swaps_tested += 1
+                improvement1 = logL1 - current_logL
+
+                # Track best attempted improvement
+                if improvement1 > best_attempted_improvement:
+                    best_attempted_improvement = improvement1
+
                 if logL1 > best_swap_logL + tolerance:
                     # Found better! Undo previous best if any
                     if best_swap:
@@ -349,6 +360,12 @@ def nni_search(
             swap2 = perform_nni_swap_inplace(node, swap_type=2)
             if swap2:
                 logL2 = _compute_likelihood_unified(tree, sequences, alpha, calculator)
+                n_swaps_tested += 1
+                improvement2 = logL2 - current_logL
+
+                # Track best attempted improvement
+                if improvement2 > best_attempted_improvement:
+                    best_attempted_improvement = improvement2
 
                 # Compare: Which is better for THIS node? swap1 or swap2?
                 if undo_swap1_for_swap2_test:
@@ -395,6 +412,9 @@ def nni_search(
 
         if not improved_this_round:
             if verbose:
+                print(f"  Tested {n_swaps_tested} swaps, best attempted improvement: {best_attempted_improvement:+.4f}")
+                if best_attempted_improvement > 0 and best_attempted_improvement <= tolerance:
+                    print(f"  (below tolerance threshold of {tolerance})")
                 print(f"\nNNI converged after {iteration + 1} iterations")
                 print(f"Final LogL: {current_logL:.2f}")
                 print(f"Total improvements: {n_improvements}")

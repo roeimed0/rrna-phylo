@@ -1,11 +1,4 @@
-"""
-UPGMA (Unweighted Pair Group Method with Arithmetic Mean) tree building.
-
-UPGMA is a simple hierarchical clustering method that assumes a constant
-molecular clock (equal evolutionary rates across all lineages).
-
-Note: TreeNode class is now imported from rrna_phylo.core.tree
-"""
+"""UPGMA tree building using hierarchical clustering."""
 
 import numpy as np
 from typing import List, Tuple, Dict
@@ -76,15 +69,6 @@ class UPGMABuilder:
         return root
 
 def build_upgma_tree(distance_matrix: np.ndarray, labels: List[str]) -> TreeNode:
-    """
-    Convenience function to build UPGMA tree.
-
-    Args:
-        distance_matrix: NxN symmetric distance matrix
-        labels: Sequence names
-
-    Returns:
-        Root node of UPGMA tree
-    """
+    """Build UPGMA tree from distance matrix and sequence labels."""
     builder = UPGMABuilder()
     return builder.build_tree(distance_matrix, labels)

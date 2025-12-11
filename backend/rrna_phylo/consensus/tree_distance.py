@@ -14,29 +14,7 @@ from rrna_phylo.consensus.bipartitions import (
 
 
 def robinson_foulds_distance(tree1: TreeNode, tree2: TreeNode, normalize: bool = False) -> float:
-    """
-    Calculate Robinson-Foulds (RF) distance between two trees.
-
-    The RF distance is the number of bipartitions that differ between trees.
-    RF = |splits in tree1 not in tree2| + |splits in tree2 not in tree1|
-
-    Args:
-        tree1: First tree
-        tree2: Second tree
-        normalize: If True, return normalized RF distance (0-1 scale)
-
-    Returns:
-        RF distance (integer if normalize=False, float 0-1 if normalize=True)
-
-    Raises:
-        ValueError: If trees have different taxa
-
-    Example:
-        tree1 = parse_newick("((A,B),(C,D));")
-        tree2 = parse_newick("((A,C),(B,D));")
-        rf = robinson_foulds_distance(tree1, tree2)
-        # rf > 0 because topologies differ
-    """
+    """Calculate Robinson-Foulds (RF) distance between two trees."""
     # Get bipartitions from both trees
     bp1 = get_bipartitions(tree1)
     bp2 = get_bipartitions(tree2)
@@ -67,20 +45,7 @@ def robinson_foulds_distance(tree1: TreeNode, tree2: TreeNode, normalize: bool =
 
 
 def informative_rf_distance(tree1: TreeNode, tree2: TreeNode, normalize: bool = False) -> float:
-    """
-    Calculate RF distance using only informative bipartitions.
-
-    Excludes trivial splits (single taxon vs rest), focusing on
-    internal tree structure.
-
-    Args:
-        tree1: First tree
-        tree2: Second tree
-        normalize: If True, return normalized distance (0-1)
-
-    Returns:
-        RF distance based on informative bipartitions only
-    """
+    """Calculate RF distance using only informative bipartitions."""
     # Get informative bipartitions (exclude trivial splits)
     bp1 = get_informative_bipartitions(tree1)
     bp2 = get_informative_bipartitions(tree2)
@@ -100,42 +65,13 @@ def informative_rf_distance(tree1: TreeNode, tree2: TreeNode, normalize: bool = 
 
 
 def tree_similarity(tree1: TreeNode, tree2: TreeNode) -> float:
-    """
-    Calculate similarity between trees (inverse of normalized RF).
-
-    Args:
-        tree1: First tree
-        tree2: Second tree
-
-    Returns:
-        Similarity score from 0.0 (completely different) to 1.0 (identical)
-    """
+    """Calculate similarity between trees (inverse of normalized RF)."""
     rf_norm = robinson_foulds_distance(tree1, tree2, normalize=True)
     return 1.0 - rf_norm
 
 
 def compare_trees(tree1: TreeNode, tree2: TreeNode) -> dict:
-    """
-    Comprehensive comparison of two trees.
-
-    Args:
-        tree1: First tree
-        tree2: Second tree
-
-    Returns:
-        Dictionary with multiple distance metrics:
-        - 'rf_distance': Raw RF distance
-        - 'rf_normalized': Normalized RF (0-1)
-        - 'similarity': Tree similarity (0-1)
-        - 'shared_splits': Number of shared bipartitions
-        - 'total_splits': Total unique bipartitions
-        - 'identical': Boolean, True if trees are identical
-
-    Example:
-        result = compare_trees(upgma_tree, bionj_tree)
-        print(f"Similarity: {result['similarity']:.2%}")
-        print(f"Shared splits: {result['shared_splits']}/{result['total_splits']}")
-    """
+    """Comprehensive comparison of two trees."""
     bp1 = get_bipartitions(tree1)
     bp2 = get_bipartitions(tree2)
 

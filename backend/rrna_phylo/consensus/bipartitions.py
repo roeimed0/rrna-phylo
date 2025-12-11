@@ -10,15 +10,7 @@ from rrna_phylo.core.tree import TreeNode
 
 
 def get_leaf_names(node: TreeNode) -> Set[str]:
-    """
-    Get all leaf names in the subtree rooted at this node.
-
-    Args:
-        node: Root of subtree
-
-    Returns:
-        Set of leaf names
-    """
+    """Get all leaf names in the subtree rooted at this node."""
     if node.is_leaf():
         return {node.name}
 
@@ -32,26 +24,7 @@ def get_leaf_names(node: TreeNode) -> Set[str]:
 
 
 def get_bipartitions(tree: TreeNode) -> Set[FrozenSet[str]]:
-    """
-    Extract all bipartitions from a phylogenetic tree.
-
-    A bipartition divides taxa into two groups. For each internal edge,
-    we get the taxa on one side vs. the other side.
-
-    We use canonical form: store the smaller of the two groups.
-    This ensures {A,B}|{C,D} and {C,D}|{A,B} are treated as the same.
-
-    Args:
-        tree: Root of the tree
-
-    Returns:
-        Set of bipartitions, each as frozenset of taxa names
-
-    Example:
-        Tree: ((A,B),(C,D))
-        Returns: {frozenset({'A','B'}), frozenset({'A'}), frozenset({'B'}),
-                  frozenset({'C'}), frozenset({'D'})}
-    """
+    """Extract all bipartitions from a phylogenetic tree."""
     bipartitions = set()
     all_taxa = get_leaf_names(tree)
 
@@ -90,23 +63,7 @@ def get_bipartitions(tree: TreeNode) -> Set[FrozenSet[str]]:
 
 
 def get_informative_bipartitions(tree: TreeNode) -> Set[FrozenSet[str]]:
-    """
-    Get only informative (non-trivial) bipartitions.
-
-    Informative bipartitions have at least 2 taxa on each side.
-    Trivial bipartitions (single taxon vs rest) are excluded.
-
-    Args:
-        tree: Root of the tree
-
-    Returns:
-        Set of informative bipartitions
-
-    Example:
-        Tree: ((A,B),(C,D))
-        Informative: {frozenset({'A','B'})}  # C,D implied
-        Trivial (excluded): {A}, {B}, {C}, {D}
-    """
+    """Get only informative (non-trivial) bipartitions."""
     all_bipartitions = get_bipartitions(tree)
     all_taxa = get_leaf_names(tree)
 
@@ -120,32 +77,7 @@ def get_informative_bipartitions(tree: TreeNode) -> Set[FrozenSet[str]]:
 
 
 def are_compatible(bp1: FrozenSet[str], bp2: FrozenSet[str], all_taxa: Set[str]) -> bool:
-    """
-    Check if two bipartitions are compatible (can coexist in same tree).
-
-    Two bipartitions are compatible if one of these is true:
-    1. They are disjoint (no overlap)
-    2. One is a subset of the other
-    3. One is a subset of the complement of the other
-
-    Args:
-        bp1: First bipartition
-        bp2: Second bipartition
-        all_taxa: Complete set of all taxa
-
-    Returns:
-        True if compatible, False if conflicting
-
-    Example:
-        all_taxa = {A, B, C, D}
-        bp1 = {A, B}  # implies {C, D} on other side
-        bp2 = {A, C}  # implies {B, D} on other side
-        -> NOT compatible (conflict about A and B being together)
-
-        bp1 = {A, B}  # implies {C, D}
-        bp2 = {A}     # implies {B, C, D}
-        -> Compatible (A is subset of {A,B})
-    """
+    """Check if two bipartitions are compatible (can coexist in same tree)."""
     # Get complements
     comp1 = all_taxa - bp1
     comp2 = all_taxa - bp2
@@ -173,18 +105,7 @@ def are_compatible(bp1: FrozenSet[str], bp2: FrozenSet[str], all_taxa: Set[str])
 
 
 def get_taxa_from_trees(trees: List[TreeNode]) -> Set[str]:
-    """
-    Get the complete set of taxa from multiple trees.
-
-    Args:
-        trees: List of trees
-
-    Returns:
-        Set of all unique taxon names
-
-    Raises:
-        ValueError: If trees have different taxa sets
-    """
+    """Get the complete set of taxa from multiple trees."""
     if not trees:
         return set()
 

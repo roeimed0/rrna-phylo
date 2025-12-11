@@ -6,33 +6,10 @@ This module defines the TreeNode class used throughout the package.
 
 
 class TreeNode:
-    """
-    Represents a node in a phylogenetic tree.
-
-    A phylogenetic tree is a binary tree where:
-    - Leaf nodes represent sequences (taxa)
-    - Internal nodes represent ancestral sequences
-    - Branch lengths represent evolutionary distance
-
-    Attributes:
-        name: Name of the node (used for leaf nodes)
-        left: Left child node
-        right: Right child node
-        distance: Branch length from parent to this node
-        height: Height of node in tree (used during construction)
-    """
+    """Represents a node in a phylogenetic tree."""
 
     def __init__(self, name: str = None, left=None, right=None, distance: float = 0.0, support: float = None):
-        """
-        Initialize tree node.
-
-        Args:
-            name: Name of the node (for leaves, typically sequence ID)
-            left: Left child TreeNode
-            right: Right child TreeNode
-            distance: Branch length from parent (evolutionary distance)
-            support: Bootstrap/consensus support value (0-100, optional)
-        """
+        """Initialize tree node."""
         self.name = name
         self.left = left
         self.right = right
@@ -41,35 +18,11 @@ class TreeNode:
         self.height = 0.0  # Used during tree construction
 
     def is_leaf(self) -> bool:
-        """
-        Check if this is a leaf node (terminal node representing a sequence).
-
-        Returns:
-            True if leaf node (no children), False if internal node
-        """
+        """Check if this is a leaf node."""
         return self.left is None and self.right is None
 
     def to_newick(self, include_internal_names: bool = False) -> str:
-        """
-        Convert tree to Newick format string.
-
-        Newick format is the standard for representing phylogenetic trees:
-        - Leaves: name:distance (quoted if name contains spaces/special chars)
-        - Internal: (left,right):distance
-        - Example: (('Species A':0.1,'Species B':0.2):0.3,'Species C':0.4);
-
-        Args:
-            include_internal_names: Include internal node names (default: False)
-                Note: Internal node names with quotes can cause parsing issues in some tools
-
-        Returns:
-            Newick format string (without trailing semicolon)
-
-        Example:
-            >>> leaf = TreeNode("Species name", distance=0.1)
-            >>> leaf.to_newick()
-            "'Species name':0.100000"
-        """
+        """Convert tree to Newick format string."""
         if self.is_leaf():
             # Quote name if it contains spaces or special characters
             quoted_name = f"'{self.name}'" if (' ' in self.name or '(' in self.name or ')' in self.name) else self.name
@@ -94,12 +47,7 @@ class TreeNode:
             return f"Internal(left={left_name}, right={right_name})"
 
     def count_leaves(self) -> int:
-        """
-        Count the number of leaf nodes (taxa) in the tree.
-
-        Returns:
-            Number of leaves in the subtree rooted at this node
-        """
+        """Count the number of leaf nodes (taxa) in the tree."""
         if self.is_leaf():
             return 1
         count = 0
@@ -110,12 +58,7 @@ class TreeNode:
         return count
 
     def get_leaves(self) -> list:
-        """
-        Get all leaf nodes in the tree.
-
-        Returns:
-            List of leaf TreeNode objects
-        """
+        """Get all leaf nodes in the tree."""
         if self.is_leaf():
             return [self]
         leaves = []
@@ -126,26 +69,11 @@ class TreeNode:
         return leaves
 
     def get_leaf_names(self) -> list:
-        """
-        Get names of all leaves in the tree.
-
-        Returns:
-            List of leaf names (sequence IDs)
-        """
+        """Get names of all leaves in the tree."""
         return [leaf.name for leaf in self.get_leaves()]
 
     def copy(self):
-        """
-        Create a deep copy of the tree.
-
-        Returns:
-            New TreeNode with same structure and values
-
-        Example:
-            >>> original = TreeNode("A", distance=0.5)
-            >>> copy = original.copy()
-            >>> copy.distance = 1.0  # Doesn't affect original
-        """
+        """Create a deep copy of the tree."""
         if self.is_leaf():
             return TreeNode(
                 name=self.name,
@@ -165,21 +93,7 @@ class TreeNode:
         )
 
     def find_node(self, name: str):
-        """
-        Find a node by name in the tree.
-
-        Args:
-            name: Node name to search for
-
-        Returns:
-            TreeNode if found, None otherwise
-
-        Example:
-            >>> tree = TreeNode("root", left=TreeNode("A"), right=TreeNode("B"))
-            >>> node = tree.find_node("A")
-            >>> node.name
-            'A'
-        """
+        """Find a node by name in the tree."""
         if self.name == name:
             return self
 
@@ -196,18 +110,7 @@ class TreeNode:
         return None
 
     def get_internal_nodes(self) -> list:
-        """
-        Get all internal (non-leaf) nodes in the tree.
-
-        Returns:
-            List of internal TreeNode objects
-
-        Example:
-            >>> tree = TreeNode(left=TreeNode("A"), right=TreeNode("B"))
-            >>> internals = tree.get_internal_nodes()
-            >>> len(internals)
-            1
-        """
+        """Get all internal (non-leaf) nodes in the tree."""
         if self.is_leaf():
             return []
 
@@ -220,12 +123,7 @@ class TreeNode:
         return nodes
 
     def get_all_nodes(self) -> list:
-        """
-        Get all nodes (internal and leaf) in the tree.
-
-        Returns:
-            List of all TreeNode objects
-        """
+        """Get all nodes (internal and leaf) in the tree."""
         if self.is_leaf():
             return [self]
 
