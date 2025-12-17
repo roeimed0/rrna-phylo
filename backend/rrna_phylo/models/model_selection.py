@@ -55,45 +55,34 @@ def compute_likelihood_for_model(
     Returns:
         (log_likelihood, model_params)
     """
-    from rrna_phylo.models.rate_matrices import (
-        get_jc69_rate_matrix,
-        get_k80_rate_matrix,
-        get_f81_rate_matrix,
-        get_hky85_rate_matrix,
-        normalize_rate_matrix
-    )
-
     # Get empirical base frequencies
     freqs = compute_empirical_frequencies(sequences)
 
-    # Get model-specific rate matrix
+    # Get model from substitution_models module (unified interface)
+    model = get_model(model_name)
+
+    # Get model-specific rate matrix and parameters
     if model_name == 'JC69':
-        Q = get_jc69_rate_matrix()
-        Q = normalize_rate_matrix(Q, np.array([0.25, 0.25, 0.25, 0.25]))
+        Q = model.get_rate_matrix()  # No params needed for JC69
         params = None
 
     elif model_name == 'K80':
         kappa = 2.0  # Initial guess
-        Q = get_k80_rate_matrix(kappa)
-        Q = normalize_rate_matrix(Q, np.array([0.25, 0.25, 0.25, 0.25]))
+        Q = model.get_rate_matrix(params=np.array([kappa]))
         params = np.array([kappa])
 
     elif model_name == 'F81':
-        Q = get_f81_rate_matrix(freqs)
-        Q = normalize_rate_matrix(Q, freqs)
+        Q = model.get_rate_matrix(freqs=freqs)
         params = freqs.copy()
 
     elif model_name == 'HKY85':
         kappa = 2.0  # Initial guess
-        Q = get_hky85_rate_matrix(kappa, freqs)
-        Q = normalize_rate_matrix(Q, freqs)
+        Q = model.get_rate_matrix(params=np.array([kappa]), freqs=freqs)
         params = np.array([kappa])
 
     elif model_name == 'GTR':
-        from rrna_phylo.models.rate_matrices import get_gtr_rate_matrix
         exchangeabilities = np.array([1.0, 4.0, 1.0, 1.0, 4.0, 1.0])
-        Q = get_gtr_rate_matrix(exchangeabilities, freqs)
-        Q = normalize_rate_matrix(Q, freqs)
+        Q = model.get_rate_matrix(params=exchangeabilities, freqs=freqs)
         params = exchangeabilities.copy()
 
     else:

@@ -254,6 +254,58 @@ def build_ml_tree_level4(
         metadata['n_nni_improvements'] = n_improvements
         metadata['used_gpu'] = use_gpu
 
+    elif tree_search == 'spr':
+        # SPR (Subtree Pruning and Regrafting) - Using PROPER implementation
+        #
+        # This uses a carefully implemented SPR that:
+        # - Maintains binary tree property
+        # - Preserves all taxa
+        # - Properly handles parent node collapse
+        # - Validates tree structure after each move
+
+        if verbose:
+            print("\nPerforming SPR search...")
+            print("NOTE: Using proper SPR with tree structure validation")
+
+        from rrna_phylo.models.spr_search_proper import spr_search_proper
+
+        # CRITICAL FIX: Get compressor from metadata
+        compressor_for_spr = metadata.get('compressor', None)
+
+        # First do NNI to get to local optimum (standard practice)
+        improved_tree, improved_logL, n_nni = nni_search(
+            initial_tree,
+            sequences,
+            model_name=selected_model,
+            alpha=selected_alpha,
+            max_iterations=100,
+            tolerance=0.01,
+            use_gpu=use_gpu,
+            compressor=compressor_for_spr,
+            verbose=verbose
+        )
+
+        # Then try SPR for global improvement
+        if verbose:
+            print(f"\nAfter NNI: LogL = {improved_logL:.2f}")
+            print("Trying SPR for further improvement...")
+
+        improved_tree, improved_logL, n_spr = spr_search_proper(
+            improved_tree,
+            sequences,
+            alpha=selected_alpha,
+            max_iterations=3,  # SPEED: Reduced from 5 (faster convergence)
+            max_moves_per_iteration=5,  # SPEED: Reduced from 20 (4x faster!)
+            starting_logL=improved_logL,  # CRITICAL: Use NNI-optimized likelihood
+            verbose=verbose
+        )
+
+        current_tree = improved_tree
+        current_logL = improved_logL
+        metadata['n_nni_improvements'] = n_nni
+        metadata['n_spr_improvements'] = n_spr
+        metadata['used_proper_spr'] = True
+
     elif tree_search == 'hill':
         if verbose:
             print("\nPerforming hill-climbing tree search...")
@@ -282,6 +334,11 @@ def build_ml_tree_level4(
     # Step 5: Final likelihood improvement
     improvement = current_logL - initial_logL
 
+    # IMPROVED: Collapse very short branches post-optimization
+    from rrna_phylo.models.branch_length_optimizer import collapse_short_branches
+    n_collapsed = collapse_short_branches(current_tree, threshold=1e-6, verbose=verbose)
+    metadata['n_branches_collapsed'] = n_collapsed
+
     metadata['time_total'] = time.time() - start_time
 
     if verbose:
@@ -294,6 +351,8 @@ def build_ml_tree_level4(
         print(f"Improvement: {improvement:.2f}")
         if tree_search:
             print(f"NNI improvements: {metadata['n_nni_improvements']}")
+        if n_collapsed > 0:
+            print(f"Branches collapsed: {n_collapsed}")
         print(f"\nTiming:")
         print(f"  Model selection: {metadata['time_model_selection']:.2f}s")
         print(f"  Tree search: {metadata['time_tree_search']:.2f}s")

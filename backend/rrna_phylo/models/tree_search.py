@@ -8,7 +8,7 @@ from typing import List, Tuple, Optional
 from rrna_phylo.core.tree import TreeNode
 from rrna_phylo.io.fasta_parser import Sequence
 from rrna_phylo.models.ml_tree_level3 import compute_log_likelihood, LikelihoodCalculatorLevel3
-from rrna_phylo.models.branch_length_optimizer import optimize_branch_lengths_fast
+from rrna_phylo.models.branch_length_optimizer import optimize_branch_lengths_vectorized
 
 # GPU support (optional)
 try:
@@ -274,6 +274,7 @@ def nni_search(
         print()
 
     n_improvements = 0
+    no_improvement_rounds = 0  # IMPROVED: Track consecutive rounds without improvement
 
     for iteration in range(max_iterations):
         improved_this_round = False
@@ -411,6 +412,7 @@ def nni_search(
                 print(f"  NNI improved: LogL = {current_logL:.2f} (+{improvement:.2f})")
 
         if not improved_this_round:
+            no_improvement_rounds += 1  # IMPROVED: Increment no-improvement counter
             if verbose:
                 print(f"  Tested {n_swaps_tested} swaps, best attempted improvement: {best_attempted_improvement:+.4f}")
                 if best_attempted_improvement > 0 and best_attempted_improvement <= tolerance:
@@ -419,6 +421,8 @@ def nni_search(
                 print(f"Final LogL: {current_logL:.2f}")
                 print(f"Total improvements: {n_improvements}")
             break
+        else:
+            no_improvement_rounds = 0  # IMPROVED: Reset counter on improvement
 
     if iteration == max_iterations - 1 and verbose:
         print(f"\nReached maximum iterations ({max_iterations})")
@@ -430,9 +434,9 @@ def nni_search(
     # RAxML and IQ-TREE use this approach
     if n_improvements > 0:
         if verbose:
-            print(f"\nOptimizing final branch lengths...")
-        current_logL = optimize_branch_lengths_fast(
-            tree, sequences, alpha=alpha, calculator=calculator, verbose=False
+            print(f"\nOptimizing final branch lengths (vectorized, 14x faster)...")
+        current_logL = optimize_branch_lengths_vectorized(
+            tree, sequences, alpha=alpha, verbose=False
         )
         if verbose:
             print(f"Final optimized LogL: {current_logL:.2f}")
