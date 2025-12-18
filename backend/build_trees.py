@@ -14,7 +14,7 @@ Usage:
     python build_trees.py sequences.fasta --output my_results
 
 Output:
-    results/
+    results/[filename]/
         upgma_tree.nwk          - UPGMA tree (Newick)
         bionj_tree.nwk          - BioNJ tree (Newick)
         ml_tree.nwk             - ML tree (Newick)
@@ -22,6 +22,8 @@ Output:
         bionj_tree.txt          - BioNJ tree (ASCII visualization)
         ml_tree.txt             - ML tree (ASCII visualization)
         summary.txt             - Comparison of all methods
+
+    [filename] is the input file name without extension
 """
 
 import sys
@@ -67,8 +69,11 @@ def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0)
         method: Which method(s) to use ('all', 'upgma', 'bionj', 'ml')
         bootstrap: Number of bootstrap replicates (0 = disabled)
     """
-    # Create output directory
-    output_path = Path(output_dir)
+    # Create output directory with subfolder named after input file
+    input_path = Path(input_file)
+    input_basename = input_path.stem  # Get filename without extension
+
+    output_path = Path(output_dir) / input_basename
     output_path.mkdir(parents=True, exist_ok=True)
 
     print("=" * 70)
@@ -196,13 +201,15 @@ Examples:
   python build_trees.py sequences.fasta --output my_results
 
 Output Files:
-  results/upgma_tree.nwk    - UPGMA tree (Newick format)
-  results/bionj_tree.nwk    - BioNJ tree (Newick format)
-  results/ml_tree.nwk       - ML tree (Newick format)
-  results/upgma_tree.txt    - UPGMA tree (ASCII visualization)
-  results/bionj_tree.txt    - BioNJ tree (ASCII visualization)
-  results/ml_tree.txt       - ML tree (ASCII visualization)
-  results/summary.txt       - Comparison of all methods
+  results/[filename]/upgma_tree.nwk    - UPGMA tree (Newick format)
+  results/[filename]/bionj_tree.nwk    - BioNJ tree (Newick format)
+  results/[filename]/ml_tree.nwk       - ML tree (Newick format)
+  results/[filename]/upgma_tree.txt    - UPGMA tree (ASCII visualization)
+  results/[filename]/bionj_tree.txt    - BioNJ tree (ASCII visualization)
+  results/[filename]/ml_tree.txt       - ML tree (ASCII visualization)
+  results/[filename]/summary.txt       - Comparison of all methods
+
+  Note: [filename] is the input file name without extension
 
 Methods:
   UPGMA  - Fast, assumes molecular clock (all lineages evolve at same rate)

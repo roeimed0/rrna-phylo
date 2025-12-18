@@ -52,14 +52,17 @@ python build_trees.py sequences.fasta --bootstrap 100
 
 ```
 results/
-├── upgma_tree.nwk      # UPGMA tree (Newick format)
-├── bionj_tree.nwk      # BioNJ tree (Newick format)
-├── ml_tree.nwk         # ML tree (Newick format)
-├── upgma_tree.txt      # UPGMA tree (ASCII visualization)
-├── bionj_tree.txt      # BioNJ tree (ASCII visualization)
-├── ml_tree.txt         # ML tree (ASCII visualization)
-└── summary.txt         # Comparison of all methods
+└── [filename]/         # Subfolder named after input file (without extension)
+    ├── upgma_tree.nwk      # UPGMA tree (Newick format)
+    ├── bionj_tree.nwk      # BioNJ tree (Newick format)
+    ├── ml_tree.nwk         # ML tree (Newick format)
+    ├── upgma_tree.txt      # UPGMA tree (ASCII visualization)
+    ├── bionj_tree.txt      # BioNJ tree (ASCII visualization)
+    ├── ml_tree.txt         # ML tree (ASCII visualization)
+    └── summary.txt         # Comparison of all methods
 ```
+
+Example: Running `python build_trees.py sequences.fasta` creates `results/sequences/`
 
 ## Performance
 

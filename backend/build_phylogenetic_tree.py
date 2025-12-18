@@ -15,11 +15,13 @@ Usage:
     python build_phylogenetic_tree.py input.fasta [--method nni|spr] [--bootstrap N]
 
 Output:
-    results/
+    results/[filename]/
         tree.nwk          - Newick format tree
         tree_ascii.txt    - ASCII visualization
         metadata.json     - Tree statistics and model info
-        log.txt           - Build log with timing
+        build_log.txt     - Build log with timing
+
+    [filename] is the input file name without extension
 """
 
 import sys
@@ -49,8 +51,11 @@ def build_tree(input_file: str, method: str = 'nni', bootstrap: int = 0,
     Returns:
         dict: Build results with tree, metadata, and timing
     """
-    # Create output directory
-    output_path = Path(output_dir)
+    # Create output directory with subfolder named after input file
+    input_path = Path(input_file)
+    input_basename = input_path.stem  # Get filename without extension
+
+    output_path = Path(output_dir) / input_basename
     output_path.mkdir(parents=True, exist_ok=True)
 
     # Initialize log
@@ -268,10 +273,12 @@ Examples:
   python build_phylogenetic_tree.py sequences.fasta --output my_results
 
 Output files:
-  results/tree.nwk       - Newick format tree
-  results/tree_ascii.txt - ASCII visualization
-  results/metadata.json  - Build statistics
-  results/build_log.txt  - Complete build log
+  results/[filename]/tree.nwk       - Newick format tree
+  results/[filename]/tree_ascii.txt - ASCII visualization
+  results/[filename]/metadata.json  - Build statistics
+  results/[filename]/build_log.txt  - Complete build log
+
+  Note: [filename] is the input file name without extension
         """
     )
 
