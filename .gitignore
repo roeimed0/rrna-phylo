@@ -209,62 +209,11 @@ __marimo__/
 # Claude Code hooks node_modules
 .claude/hooks/node_modules/
 
-# rRNA-Phylo temporary test outputs and development files
-backend/test_*_output/
-backend/test_viz*/
-backend/test_rect*/
-backend/aligned_*.fasta
-backend/*_output.txt
-backend/test_*.py
-backend/debug_*.py
-backend/check_*.py
-backend/validate_*.py
-backend/comparison_results.txt
-backend/archive_tests/
-backend/test_outputs/
+# rRNA-Phylo specific
 backend/results/
-backend/tree_*.nwk
-backend/likelihood_surfaces.png
+backend/test_data/
+*.nwk
+*.tree
 
-# ML experiments (keep structure, ignore outputs)
-backend/ml_experiments/*.txt
-backend/ml_experiments/*.pkl
-backend/ml_experiments/*.pt
-backend/ml_experiments/*.pth
-backend/ml_experiments/checkpoints/
-backend/ml_experiments/runs/
-backend/ml_experiments/notebooks/.ipynb_checkpoints/
-
-# Documentation drafts (keep final versions only)
-backend/docs/development/*SUMMARY*.md
-backend/docs/development/*NOTES*.md
-backend/docs/development/*DEBUGGING*.md
-backend/docs/development/*IMPROVEMENTS*.md
-backend/docs/development/DEPLOYMENT_COMPLETE.md
-backend/docs/development/PROJECT_STATUS_FINAL.md
-backend/docs/development/SPR_*.md
-backend/PROJECT_COMPLETE.md
-GENERATIVE_AI_ROADMAP.md
-ML_LEARNING_PLAN.md
-GETTING_STARTED_ML.md
-ARCHITECTURE.md
-ARCHITECTURE_DIAGRAMS.md
-BIOLOGICAL_VALIDATION_REPORT.md
-CODE_OPTIMIZATION_REVIEW.md
-DOCUMENTATION_COMPLETE.md
-REAL_WORLD_TEST_REPORT.md
-REFACTORING_COMPLETE.md
-
-# Test data (large files)
-backend/test_data/*.fasta
-backend/marker_datasets_cleaned/
-
-# Backup files
-backend/rrna_phylo/models/*.backup
-backend/rrna_phylo/models/*_simple.py
-backend/rrna_phylo/models/*_proper.py
-backend/rrna_phylo/models/numba_likelihood_vectorized.py
-backend/rrna_phylo/models/spr_search*.py
-
-# Claude Code local settings
+# Claude Code
 .claude/settings.local.json
