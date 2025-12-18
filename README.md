@@ -1,13 +1,12 @@
 # rRNA-Phylo
 
-Production-ready phylogenetic tree building from rRNA sequences with smart preprocessing and publication-quality visualization.
+Production-ready phylogenetic tree building from rRNA sequences using traditional maximum likelihood methods.
 
 ## Project Goals
 
 - **Phylogenetic Analysis**: Build high-quality phylogenetic trees from rRNA sequences using multiple methods (distance-based, Maximum Likelihood)
-- **Generative AI for Trees**: Use machine learning to synthesize trees from sequences and ensemble multiple tree methods (Graph Neural Networks, Transformers)
-- **Smart Preprocessing**: Handle real-world data challenges (duplicates, database bias, multiple rRNA operons per genome)
-- **Publication-Quality Output**: Generate professional visualizations suitable for scientific publications
+- **Bootstrap Support**: Statistical confidence assessment for tree topology (Felsenstein 1985)
+- **Publication-Quality Output**: Rigorous, scientifically validated phylogenetic inference
 - **Production-Ready**: Fast, reliable, and well-tested implementation in pure Python
 
 ## Current Features [OK]
@@ -33,108 +32,86 @@ Production-ready phylogenetic tree building from rRNA sequences with smart prepr
 - Standard interpretation (Strong ≥95%, Moderate 70-94%, Weak 50-69%)
 - Integrated with production CLI
 
-✅ **ETE3 Visualization**
-- Publication-quality output (PDF, PNG, SVG, EPS)
-- 300-600 DPI resolution
-- Aligned leaf names for professional appearance
-- Bootstrap support values with color coding
-- Used by Nature, Science, and Cell publications
-
-✅ **Smart Deduplication**
-- Two-tier strategy (exact + similarity at 99.5%)
-- Species-aware clustering prevents phylogenetic errors
-- 40-60% dataset reduction without information loss
-- 28 comprehensive tests
-
-✅ **Display Names**
-- Human-readable species names in trees
-- Format: "Species name (Accession) #N"
-- Example: "Escherichia coli str. K-12 substr. MG1655 (U00096) #1"
-
-✅ **Complete CLI**
-- 20+ command-line options
-- Full control over preprocessing, tree building, and visualization
-- Comprehensive user guide with real-world workflows
+✅ **Production CLI**
+- Command-line interface for tree building
+- Multiple output formats (Newick, ASCII, JSON)
+- Comprehensive logging and metadata
+- Error handling and validation
 
 ### Quick Start
 
 ```bash
-# Build a tree with bootstrap and visualization
+# Build a phylogenetic tree with bootstrap support
 cd backend
-python -m rrna_phylo.cli test_real_rrana.fasta \
-    --method ml \
+python build_phylogenetic_tree.py sequences.fasta \
+    --method nni \
     --bootstrap 100 \
-    --dereplicate \
-    --visualize \
-    -o results/
+    --output results/
 ```
 
-**See [USAGE_GUIDE.md](backend/docs/user-guide/usage-guide.md) for complete examples and workflows.**
+This will generate:
+- `results/tree.nwk` - Newick format tree with bootstrap values
+- `results/tree_ascii.txt` - Human-readable tree visualization
+- `results/metadata.json` - Complete build statistics
+- `results/build_log.txt` - Detailed build log
 
 ## Documentation
 
-### Architecture & Design
+### Project Status
 
-📚 **[ARCHITECTURE.md](ARCHITECTURE.md)** - Comprehensive architecture documentation
-- Module hierarchy and responsibilities
-- Data flow diagrams
-- ML likelihood implementation evolution (1x → 171x speedup journey)
-- Substitution model hierarchy (JC69 → GTR)
-- Performance optimization techniques
-- Key interfaces and APIs
+📊 **[PROJECT_STATUS_DECEMBER_2025.md](backend/docs/development/PROJECT_STATUS_DECEMBER_2025.md)** - Complete project overview
+- All implemented features
+- Performance benchmarks
+- Testing results
+- Project completion status
 
-📊 **[ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)** - Visual diagrams
-- Module dependency graphs
-- Likelihood calculation flow
-- Tree flattening (vectorization key)
-- Site pattern compression
-- Performance timeline
+📋 **[BOOTSTRAP_COMPLETE.md](backend/BOOTSTRAP_COMPLETE.md)** - Bootstrap implementation details
+- Algorithm description
+- Performance analysis
+- Quality metrics
+- Usage examples
 
-### Refactoring Reports
+## Features Summary
 
-✅ **[REFACTORING_COMPLETE.md](REFACTORING_COMPLETE.md)** - December 2024 refactoring summary
-- Eliminated 288 lines of duplicate code
-- Unified model interfaces (all 5 substitution models)
-- 100% backward compatible, zero performance impact
+### Tree Building Methods
 
-📋 **[CODE_OPTIMIZATION_REVIEW.md](CODE_OPTIMIZATION_REVIEW.md)** - Detailed code analysis
-- Identifies optimization opportunities
-- Priority rankings (Critical → Optional)
-- Effort estimates and risk assessment
+**Distance-Based:**
+- UPGMA (Unweighted Pair Group Method with Arithmetic Mean)
+- Neighbor-Joining (Saitou & Nei 1987)
+- BioNJ (Gascuel 1997)
 
-## Development Skills
+**Maximum Likelihood:**
+- Model selection (JC69, K80, F81, HKY85, GTR ± gamma)
+- NNI tree search (Nearest Neighbor Interchange)
+- SPR tree search (Subtree Pruning and Regrafting)
+- Site pattern compression (1.6-2.5x speedup)
+- Numba acceleration (9x speedup)
 
-This project uses Claude Code skills for development guidance:
+**Statistical Support:**
+- Bootstrap analysis (Felsenstein 1985)
+- Configurable replicates (10-1000+)
+- Support value interpretation
 
-### Core Skills
+### Performance
 
-1. **[rRNA Prediction Patterns](.claude/skills/rrna-prediction-patterns/SKILL.md)**
-   - rRNA detection methods (HMM, BLAST, patterns)
-   - Quality scoring and validation
-   - Length and completeness assessment
+- **72x total speedup** for ML likelihood calculations
+- Site pattern compression + Numba JIT compilation
+- Typical runtime: 48 sequences in ~3 minutes (ML+NNI)
+- Bootstrap: 4-5 seconds per replicate
 
-2. **[Phylogenetic Methods](.claude/skills/phylogenetic-methods/SKILL.md)**
-   - Distance-based methods (UPGMA, Neighbor-Joining)
-   - Maximum likelihood (RAxML, IQ-TREE)
-   - Bayesian inference (MrBayes)
-   - Tree formats and consensus
+## Installation
 
-3. **[Project Architecture Patterns](.claude/skills/project-architecture-patterns/SKILL.md)**
-   - FastAPI backend design
-   - Service layer organization
-   - Testing strategies
-   - API conventions
+```bash
+# Clone repository
+git clone https://github.com/yourusername/rrna-phylo.git
+cd rrna-phylo/backend
 
-4. **[ML Integration Patterns](.claude/skills/ml-integration-patterns/SKILL.md)**
-   - rRNA classification (supervised learning)
-   - Multi-tree consensus (ensemble methods)
-   - Generative tree synthesis (GNNs/transformers)
+# Install dependencies
+pip install -r requirements.txt
 
-## Getting Started
-
-Ready to start implementing? The skills contain all the patterns and best practices you need.
-
-Simply mention your goal, and the relevant skill will activate to guide you!
+# Run example
+python build_phylogenetic_tree.py test_data/bacterial_50_aligned.fasta --bootstrap 10
+```
 
 ## License
 
