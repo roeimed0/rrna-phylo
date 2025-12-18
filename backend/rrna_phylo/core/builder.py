@@ -2,8 +2,8 @@
 Unified phylogenetic tree builder with automatic model selection.
 
 This module provides a single interface for building phylogenetic trees
-from any sequence type (DNA, RNA, or Protein), automatically detecting
-the type and selecting the appropriate substitution model.
+from DNA/RNA sequences, automatically detecting the type and selecting
+the appropriate substitution model.
 """
 
 from typing import List, Tuple, Optional
@@ -16,9 +16,7 @@ from rrna_phylo.core.tree import TreeNode
 from rrna_phylo.methods.upgma import build_upgma_tree
 from rrna_phylo.methods.bionj import build_bionj_tree
 from rrna_phylo.distance.distance import calculate_distance_matrix
-from rrna_phylo.distance.protein_distance import calculate_protein_distance_matrix
 from rrna_phylo.models.ml_tree_level4 import build_ml_tree_level4
-from rrna_phylo.methods.protein_ml import build_protein_ml_tree
 from rrna_phylo.consensus import compare_trees
 
 
@@ -27,7 +25,7 @@ class PhylogeneticTreeBuilder:
     Unified interface for phylogenetic tree building.
 
     Automatically detects sequence type and builds trees using
-    appropriate models for DNA, RNA, or Protein sequences.
+    appropriate models for DNA/RNA sequences.
 
     Usage:
         builder = PhylogeneticTreeBuilder()
@@ -132,7 +130,7 @@ class PhylogeneticTreeBuilder:
 
     def _calculate_distance_matrix(self, sequences: List[Sequence]):
         """
-        Calculate distance matrix using appropriate model for sequence type.
+        Calculate distance matrix using Jukes-Cantor model.
 
         Args:
             sequences: Aligned sequences
@@ -140,16 +138,13 @@ class PhylogeneticTreeBuilder:
         Returns:
             Tuple of (distance_matrix, sequence_ids)
         """
-        if self.seq_type == SequenceType.PROTEIN:
-            return calculate_protein_distance_matrix(sequences, model="poisson")
-        else:
-            return calculate_distance_matrix(sequences, model="jukes-cantor")
+        return calculate_distance_matrix(sequences, model="jukes-cantor")
 
     def build_upgma_tree(self, sequences: List[Sequence]) -> TreeNode:
         """
         Build UPGMA tree.
 
-        Works for DNA, RNA (Jukes-Cantor), and Protein (Poisson).
+        Works for DNA/RNA sequences using Jukes-Cantor distance.
 
         Args:
             sequences: Aligned sequences
@@ -179,7 +174,7 @@ class PhylogeneticTreeBuilder:
         """
         Build BioNJ tree.
 
-        Works for DNA, RNA (Jukes-Cantor), and Protein (Poisson).
+        Works for DNA/RNA sequences using Jukes-Cantor distance.
 
         Args:
             sequences: Aligned sequences
@@ -209,7 +204,7 @@ class PhylogeneticTreeBuilder:
         """
         Build Maximum Likelihood tree using Level 4 (automatic model selection + tree search).
 
-        Works for DNA, RNA (automatic GTR model selection), and Protein (WAG/LG/JTT+Gamma).
+        Works for DNA/RNA sequences with automatic GTR model selection.
 
         Args:
             sequences: Aligned sequences
@@ -224,31 +219,19 @@ class PhylogeneticTreeBuilder:
 
         if self.verbose:
             print("\n" + "=" * 70)
-            if self.seq_type == SequenceType.PROTEIN:
-                print(f"METHOD 3: Maximum Likelihood ({self.model_name}+Gamma)")
-            else:
-                print("METHOD 3: Maximum Likelihood (GTR+Gamma with Model Selection + NNI)")
+            print("METHOD 3: Maximum Likelihood (GTR+Gamma with Model Selection + NNI)")
             print("=" * 70)
 
-        # Use appropriate ML method
-        if self.seq_type == SequenceType.PROTEIN:
-            tree, logL = build_protein_ml_tree(
-                sequences,
-                model_name=self.model_name,
-                alpha=alpha,
-                verbose=self.verbose
-            )
-        else:
-            # Use Level 4 with automatic model selection and tree search
-            tree, logL, metadata = build_ml_tree_level4(
-                sequences,
-                model='auto',
-                alpha=alpha,
-                tree_search='nni',
-                skip_model_selection=skip_model_selection,
-                use_gpu='auto',  # Auto GPU selection based on dataset size
-                verbose=self.verbose
-            )
+        # Use Level 4 with automatic model selection and tree search
+        tree, logL, metadata = build_ml_tree_level4(
+            sequences,
+            model='auto',
+            alpha=alpha,
+            tree_search='nni',
+            skip_model_selection=skip_model_selection,
+            use_gpu='auto',  # Auto GPU selection based on dataset size
+            verbose=self.verbose
+        )
 
         if self.verbose:
             print(f"ML tree built successfully")
@@ -317,7 +300,7 @@ def build_trees(
     Convenient function to build phylogenetic trees.
 
     Args:
-        sequences: Aligned sequences (DNA, RNA, or Protein)
+        sequences: Aligned sequences (DNA/RNA)
         method: Which method(s) to use:
             - "all": Build UPGMA, BioNJ, and ML trees
             - "upgma": UPGMA only
@@ -447,5 +430,5 @@ if __name__ == "__main__":
     print("  [OK] Automatically detects sequence type")
     print("  [OK] Selects appropriate model")
     print("  [OK] Builds trees with all methods")
-    print("  [OK] Works for DNA, RNA, and (soon) Protein")
+    print("  [OK] Works for DNA and RNA sequences")
     print("=" * 70)

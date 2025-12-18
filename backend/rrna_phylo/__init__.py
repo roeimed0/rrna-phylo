@@ -1,7 +1,7 @@
 """
-rRNA-Phylo: General-Purpose Phylogenetic Analysis
+rRNA-Phylo: Phylogenetic Analysis for rRNA Sequences
 
-A comprehensive phylogenetic tree inference system for DNA, RNA, and Protein sequences.
+A phylogenetic tree inference system for DNA and RNA sequences, optimized for rRNA.
 
 Quick Start:
     >>> from rrna_phylo import build_trees, Sequence
@@ -21,7 +21,7 @@ Main Components:
     - build_trees(): Main interface for building phylogenetic trees
     - Sequence: Data class for biological sequences
     - TreeNode: Phylogenetic tree data structure
-    - SequenceType: Enum for DNA/RNA/Protein types
+    - SequenceType: Enum for DNA/RNA types
 
 For more details, see the documentation and examples.
 """
@@ -36,13 +36,13 @@ from rrna_phylo.core.builder import PhylogeneticTreeBuilder, build_trees
 from rrna_phylo.io.fasta_parser import Sequence, FastaParser
 
 # Method exports
-from rrna_phylo.methods import build_upgma_tree, build_bionj_tree, build_protein_ml_tree
+from rrna_phylo.methods import build_upgma_tree, build_bionj_tree
 
 # Model exports
-from rrna_phylo.models import build_ml_tree_level3
+from rrna_phylo.models import build_ml_tree_level3, build_ml_tree_level4
 
 # Distance calculation exports
-from rrna_phylo.distance import calculate_distance_matrix, calculate_protein_distance_matrix
+from rrna_phylo.distance import calculate_distance_matrix
 
 __all__ = [
     # Core classes
@@ -58,11 +58,10 @@ __all__ = [
     # Tree building methods
     "build_upgma_tree",
     "build_bionj_tree",
-    "build_protein_ml_tree",
     "build_ml_tree_level3",
+    "build_ml_tree_level4",
     # Distance calculations
     "calculate_distance_matrix",
-    "calculate_protein_distance_matrix",
     # Version
     "__version__",
 ]

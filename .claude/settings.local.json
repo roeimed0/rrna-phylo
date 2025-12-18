@@ -132,7 +132,9 @@
       "Bash(KMP_DUPLICATE_LIB_OK=TRUE timeout 180 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
       "Bash(KMP_DUPLICATE_LIB_OK=TRUE timeout 120 C:/Users/User/anaconda3/envs/gene_prediction/python.exe:*)",
       "Bash([ -f benchmark_results.txt ])",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

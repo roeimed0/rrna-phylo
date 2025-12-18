@@ -19,7 +19,6 @@ from copy import deepcopy
 from rrna_phylo.io.fasta_parser import Sequence
 from rrna_phylo.core.tree import TreeNode
 from rrna_phylo.models.substitution_models import GTRModel
-from rrna_phylo.models.ml_tree_level2 import LikelihoodCalculator as BaseLikelihoodCalculator
 
 # Import Numba-accelerated functions
 try:
