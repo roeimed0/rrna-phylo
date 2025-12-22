@@ -103,7 +103,7 @@ def visualize_tree_ascii(tree, title="PHYLOGENETIC TREE", max_width=120):
 
 
 def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0,
-                   visualize=None, dpi=300):
+                   pre_aligned=False, visualize=None, dpi=300):
     """
     Build phylogenetic trees using selected method(s).
 
@@ -112,6 +112,7 @@ def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0,
         output_dir: Output directory
         method: Which method(s) to use ('all', 'upgma', 'bionj', 'ml')
         bootstrap: Number of bootstrap replicates (0 = disabled)
+        pre_aligned: If True, skip MUSCLE alignment (but verify equal lengths)
         visualize: Visualization format ('pdf', 'png', 'svg', or None)
         dpi: Resolution for PNG output (default: 300)
     """
@@ -142,9 +143,39 @@ def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0,
     print("[2/3] Building phylogenetic trees...")
     builder = PhylogeneticTreeBuilder(verbose=True)
 
-    # Detect sequence type and align if needed
+    # Detect sequence type
     builder.detect_and_validate(sequences)
-    aligned_seqs = builder._align_sequences(sequences)
+
+    # Handle alignment based on pre_aligned flag
+    if pre_aligned:
+        # User claims sequences are pre-aligned - verify they're same length
+        lengths = set(seq.aligned_length for seq in sequences)
+        if len(lengths) > 1:
+            print(f"\nERROR: --pre-aligned flag set but sequences have different lengths!")
+            print(f"Found {len(lengths)} different lengths: {sorted(lengths)}")
+            print("\nOptions:")
+            print("  1. Remove --pre-aligned flag to run MUSCLE alignment")
+            print("  2. Pre-align your sequences before running this tool")
+            sys.exit(1)
+
+        print(f"Sequences are pre-aligned ({sequences[0].aligned_length} bp) - skipping MUSCLE")
+        aligned_seqs = sequences
+    else:
+        # Default: Always run MUSCLE alignment (even if sequences appear same length)
+        print("\nRunning MUSCLE alignment...")
+        print("  (Use --pre-aligned flag to skip MUSCLE if your sequences are already aligned)")
+
+        # Use MUSCLE aligner directly
+        from rrna_phylo.io.aligner import MuscleAligner
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".fasta") as tmp:
+            output_file = tmp.name
+
+        aligner = MuscleAligner()
+        aligned_seqs = aligner.align_sequences(sequences, output_file)
+
+        print(f"Alignment complete. Aligned length: {aligned_seqs[0].aligned_length}")
 
     trees = {}
 
@@ -258,7 +289,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Build all three tree types (UPGMA, BioNJ, ML)
+  # Build all three tree types (UPGMA, BioNJ, ML) - runs MUSCLE alignment
   python build_trees.py sequences.fasta
 
   # Build only UPGMA tree (fastest)
@@ -266,6 +297,9 @@ Examples:
 
   # Build only ML tree (most rigorous)
   python build_trees.py sequences.fasta --method ml
+
+  # Skip MUSCLE if sequences are pre-aligned (much faster!)
+  python build_trees.py aligned_sequences.fasta --pre-aligned
 
   # Build with bootstrap support (slow)
   python build_trees.py sequences.fasta --bootstrap 100
@@ -306,6 +340,8 @@ Methods:
                        help='Which method(s) to use (default: all)')
     parser.add_argument('--bootstrap', type=int, default=0,
                        help='Bootstrap replicates (0 = disabled, default: 0)')
+    parser.add_argument('--pre-aligned', action='store_true',
+                       help='Input is pre-aligned (skip MUSCLE, but verify equal lengths)')
     parser.add_argument('--output', default='results',
                        help='Output directory (default: results)')
     parser.add_argument('--visualize', choices=['pdf', 'png', 'svg'],
@@ -327,6 +363,7 @@ Methods:
             output_dir=args.output,
             method=args.method,
             bootstrap=args.bootstrap,
+            pre_aligned=args.pre_aligned,
             visualize=args.visualize,
             dpi=args.dpi
         )
