@@ -188,11 +188,7 @@ def build_ml_tree_level4(
 
         if verbose:
             print("\nSkipping model selection (using GTR+G directly for speed)")
-            print("WARNING: Also skipping NNI tree search (NNI currently breaks branch lengths)")
-
-        # TEMPORARY FIX: Skip NNI when skipping model selection
-        # NNI is collapsing branches to zero - needs proper branch length re-optimization
-        tree_search = None  # Override to skip NNI
+            print("  NNI tree search will still be performed for topology optimization")
 
     else:
         # Use specified model
@@ -213,6 +209,10 @@ def build_ml_tree_level4(
             print(f"Gamma parameter: {metadata['alpha']:.3f}")
 
     # Step 3: Calculate initial likelihood
+    if verbose:
+        print(f"\nCalculating initial likelihood on {len(sequences)} sequences ({len(sequences[0].sequence)} bp)...")
+        print("  (Using site pattern compression + Numba JIT for speed)")
+
     initial_logL = compute_log_likelihood(
         initial_tree,
         sequences,
@@ -221,7 +221,7 @@ def build_ml_tree_level4(
     metadata['initial_logL'] = initial_logL
 
     if verbose:
-        print(f"Initial LogL: {initial_logL:.2f}")
+        print(f"  Initial LogL: {initial_logL:.2f}")
 
     # Step 4: Tree topology search
     time_search_start = time.time()
