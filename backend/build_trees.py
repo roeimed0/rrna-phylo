@@ -26,15 +26,27 @@ Output:
     [filename] is the input file name without extension
 """
 
+import os
 import sys
 import argparse
 from pathlib import Path
 from datetime import datetime
 
+# Prevent Intel OpenMP library conflicts
+# This is safe and necessary when multiple packages (NumPy, SciPy, PyTorch) bundle MKL
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 from rrna_phylo.io.fasta_parser import FastaParser
 from rrna_phylo.core.builder import PhylogeneticTreeBuilder
+
+# Check if ETE3 is available
+try:
+    from rrna_phylo.visualization.ete3_viz import visualize_tree
+    ETE3_AVAILABLE = True
+except ImportError:
+    ETE3_AVAILABLE = False
 
 
 def visualize_tree_ascii(tree, title="PHYLOGENETIC TREE"):
@@ -59,7 +71,8 @@ def visualize_tree_ascii(tree, title="PHYLOGENETIC TREE"):
     return "\n".join(lines)
 
 
-def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0):
+def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0,
+                   visualize=None, dpi=300):
     """
     Build phylogenetic trees using selected method(s).
 
@@ -68,6 +81,8 @@ def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0)
         output_dir: Output directory
         method: Which method(s) to use ('all', 'upgma', 'bionj', 'ml')
         bootstrap: Number of bootstrap replicates (0 = disabled)
+        visualize: Visualization format ('pdf', 'png', 'svg', or None)
+        dpi: Resolution for PNG output (default: 300)
     """
     # Create output directory with subfolder named after input file
     input_path = Path(input_file)
@@ -143,6 +158,29 @@ def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0)
             f.write(ascii_content)
         print(f"  Saved: {ascii_file}")
 
+        # Save ETE3 visualization if requested
+        if visualize:
+            if not ETE3_AVAILABLE:
+                print(f"  Warning: ETE3 not installed, skipping {visualize} visualization")
+                print(f"  Install with: pip install ete3")
+            else:
+                viz_file = output_path / f"{key}_tree.{visualize}"
+                try:
+                    success = visualize_tree(
+                        str(newick_file),
+                        str(viz_file),
+                        show_bootstrap=bootstrap > 0,
+                        show_branch_length=True,
+                        dpi=dpi,
+                        title=f"{name} Tree"
+                    )
+                    if success:
+                        print(f"  Saved: {viz_file}")
+                    else:
+                        print(f"  Warning: Failed to create {viz_file}")
+                except Exception as e:
+                    print(f"  Warning: Visualization failed: {e}")
+
         # Add to summary
         summary_lines.append(f"{name}:")
         summary_lines.append(f"  File: {key}_tree.nwk")
@@ -200,6 +238,15 @@ Examples:
   # Custom output directory
   python build_trees.py sequences.fasta --output my_results
 
+  # Create PDF visualization (requires: pip install ete3)
+  python build_trees.py sequences.fasta --visualize pdf
+
+  # Create high-resolution PNG for publication (600 DPI)
+  python build_trees.py sequences.fasta --visualize png --dpi 600
+
+  # Create SVG vector graphics
+  python build_trees.py sequences.fasta --visualize svg
+
 Output Files:
   results/[filename]/upgma_tree.nwk    - UPGMA tree (Newick format)
   results/[filename]/bionj_tree.nwk    - BioNJ tree (Newick format)
@@ -226,6 +273,10 @@ Methods:
                        help='Bootstrap replicates (0 = disabled, default: 0)')
     parser.add_argument('--output', default='results',
                        help='Output directory (default: results)')
+    parser.add_argument('--visualize', choices=['pdf', 'png', 'svg'],
+                       help='Create publication-quality visualization (requires ETE3)')
+    parser.add_argument('--dpi', type=int, default=300,
+                       help='DPI for PNG output (default: 300, use 600 for publication)')
 
     args = parser.parse_args()
 
@@ -240,7 +291,9 @@ Methods:
             args.input,
             output_dir=args.output,
             method=args.method,
-            bootstrap=args.bootstrap
+            bootstrap=args.bootstrap,
+            visualize=args.visualize,
+            dpi=args.dpi
         )
     except Exception as e:
         print(f'\nError: {e}')

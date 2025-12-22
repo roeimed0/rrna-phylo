@@ -24,11 +24,16 @@ Output:
     [filename] is the input file name without extension
 """
 
+import os
 import sys
 import json
 import time
 from pathlib import Path
 from datetime import datetime
+
+# Prevent Intel OpenMP library conflicts
+# This is safe and necessary when multiple packages (NumPy, SciPy, PyTorch) bundle MKL
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -36,9 +41,16 @@ from rrna_phylo.io.fasta_parser import FastaParser
 from rrna_phylo.models.ml_tree_level4 import build_ml_tree_level4
 from rrna_phylo.models.bootstrap import bootstrap_analysis
 
+# Check if ETE3 is available
+try:
+    from rrna_phylo.visualization.ete3_viz import visualize_tree
+    ETE3_AVAILABLE = True
+except ImportError:
+    ETE3_AVAILABLE = False
+
 
 def build_tree(input_file: str, method: str = 'nni', bootstrap: int = 0,
-               output_dir: str = 'results'):
+               output_dir: str = 'results', visualize: str = None, dpi: int = 300):
     """
     Build a phylogenetic tree from aligned sequences.
 
@@ -47,6 +59,8 @@ def build_tree(input_file: str, method: str = 'nni', bootstrap: int = 0,
         method: Tree search method ('nni' or 'spr')
         bootstrap: Number of bootstrap replicates (0 = no bootstrap)
         output_dir: Output directory for results
+        visualize: Visualization format ('pdf', 'png', 'svg', or None)
+        dpi: Resolution for PNG output (default: 300)
 
     Returns:
         dict: Build results with tree, metadata, and timing
@@ -207,6 +221,35 @@ def build_tree(input_file: str, method: str = 'nni', bootstrap: int = 0,
         log_lines.append(f'  Warning: Could not create ASCII tree: {e}')
         print(log_lines[-1])
 
+    # Save ETE3 visualization if requested
+    if visualize:
+        if not ETE3_AVAILABLE:
+            warning_msg = f'  Warning: ETE3 not installed, skipping {visualize} visualization'
+            log_lines.append(warning_msg)
+            print(warning_msg)
+            log_lines.append('  Install with: pip install ete3')
+            print(log_lines[-1])
+        else:
+            viz_file = output_path / f'tree.{visualize}'
+            try:
+                success = visualize_tree(
+                    str(newick_file),
+                    str(viz_file),
+                    show_bootstrap=bootstrap > 0,
+                    show_branch_length=True,
+                    dpi=dpi,
+                    title="Maximum Likelihood Tree"
+                )
+                if success:
+                    log_lines.append(f'  Saved: {viz_file}')
+                    print(log_lines[-1])
+                else:
+                    log_lines.append(f'  Warning: Failed to create {viz_file}')
+                    print(log_lines[-1])
+            except Exception as e:
+                log_lines.append(f'  Warning: Visualization failed: {e}')
+                print(log_lines[-1])
+
     # Save metadata
     metadata_file = output_path / 'metadata.json'
     metadata_dict = {
@@ -289,6 +332,10 @@ Output files:
                        help='Number of bootstrap replicates (default: 0)')
     parser.add_argument('--output', default='results',
                        help='Output directory (default: results)')
+    parser.add_argument('--visualize', choices=['pdf', 'png', 'svg'],
+                       help='Create publication-quality visualization (requires ETE3)')
+    parser.add_argument('--dpi', type=int, default=300,
+                       help='DPI for PNG output (default: 300, use 600 for publication)')
 
     args = parser.parse_args()
 
@@ -303,7 +350,9 @@ Output files:
             args.input,
             method=args.method,
             bootstrap=args.bootstrap,
-            output_dir=args.output
+            output_dir=args.output,
+            visualize=args.visualize,
+            dpi=args.dpi
         )
 
         print(f'\nTree successfully built!')
