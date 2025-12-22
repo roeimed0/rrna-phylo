@@ -1,0 +1,11 @@
+# Ignore all FASTA files
+*.fasta
+*.fa
+*.fna
+
+# Except small example files (if any)
+# !example.fasta
+
+# Keep the README
+!README.md
+!.gitignore
