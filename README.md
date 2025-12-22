@@ -44,8 +44,8 @@ python app.py
 # Select Option 2: Build Trees (Quick)
 # Choose a test dataset:
 #   - mammals_test.fasta (34 species)
-#   - Arcosauria_test.fasta (126 species - reptiles/birds)
-#   - cartilaginous_fish_test.fasta (29 species - sharks/rays)
+#   - Arcosauria_test.fasta (111 species - reptiles/birds)
+#   - cartilaginous_fish_test.fasta (28 species - sharks/rays)
 ```
 
 Real biological test datasets ship with the project in `data/test/` - perfect for trying the tool immediately!

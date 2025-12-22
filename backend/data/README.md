@@ -37,8 +37,8 @@ python prepare_fasta.py your_data.fasta cleaned_data.fasta
 The `test/` folder contains real biological datasets for testing:
 
 - **mammals_test.fasta** - 34 mammalian species (60 KB)
-- **Arcosauria_test.fasta** - 126 reptile/bird species (186 KB)
-- **cartilaginous_fish_test.fasta** - 29 shark/ray species (53 KB)
+- **Arcosauria_test.fasta** - 111 reptile/bird species (148 KB)
+- **cartilaginous_fish_test.fasta** - 28 shark/ray species (50 KB)
 
 These files:
 - Ship with the project for immediate testing
@@ -59,8 +59,8 @@ These files:
 data/
 ├── test/
 │   ├── mammals_test.fasta (34 species)
-│   ├── Arcosauria_test.fasta (126 species)
-│   └── cartilaginous_fish_test.fasta (29 species)
+│   ├── Arcosauria_test.fasta (111 species)
+│   └── cartilaginous_fish_test.fasta (28 species)
 ├── pr2_Mammalia_2025-12-22.fasta
 └── your_custom_data.fasta
 ```
