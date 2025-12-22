@@ -36,15 +36,24 @@ conda install numpy scipy numba biopython
 cd backend
 ```
 
-### Interactive Menu (Easiest - Recommended)
+### Interactive Application (Easiest - Recommended)
 
-For the easiest experience with guided options:
+Launch the interactive menu with guided options:
 
 ```bash
-python menu.py
+python app.py
 ```
 
-**Menu includes:**
+**Or use built-in commands:**
+```bash
+python app.py build sequences.fasta              # Build all 3 trees
+python app.py build sequences.fasta --visualize pdf  # With visualization
+python app.py test                                # Full test workflow
+python app.py clean                              # Clean up test files
+python app.py --help                             # Show all options
+```
+
+**Interactive menu includes:**
 - ✅ Quick build (one-click with defaults)
 - ✅ Custom build (choose all options interactively)
 - ✅ Advanced ML (model selection + tree search)
@@ -56,10 +65,10 @@ python menu.py
 
 **No command-line flags to remember!**
 
-### Build All Three Tree Types (Command Line)
+### Build All Three Tree Types (Direct CLI)
 
 ```bash
-python build_trees.py sequences.fasta
+python rrna_phylo_cli.py sequences.fasta
 ```
 
 **Output:** Creates `results/sequences/` with 7 files:
@@ -71,36 +80,36 @@ python build_trees.py sequences.fasta
 
 ```bash
 # UPGMA (fastest, assumes clock)
-python build_trees.py sequences.fasta --method upgma
+python rrna_phylo_cli.py sequences.fasta --method upgma
 
 # BioNJ (fast, no clock)
-python build_trees.py sequences.fasta --method bionj
+python rrna_phylo_cli.py sequences.fasta --method bionj
 
 # Maximum Likelihood (slow, most accurate)
-python build_trees.py sequences.fasta --method ml
+python rrna_phylo_cli.py sequences.fasta --method ml
 ```
 
 ### Add Bootstrap Support
 
 ```bash
 # 100 replicates (recommended for publication)
-python build_trees.py sequences.fasta --bootstrap 100
+python rrna_phylo_cli.py sequences.fasta --bootstrap 100
 
 # 10 replicates (quick test)
-python build_trees.py sequences.fasta --bootstrap 10
+python rrna_phylo_cli.py sequences.fasta --bootstrap 10
 ```
 
 ### Create Publication-Quality Visualizations
 
 ```bash
 # PDF visualization (vector graphics, best for publications)
-python build_trees.py sequences.fasta --visualize pdf
+python rrna_phylo_cli.py sequences.fasta --visualize pdf
 
 # High-resolution PNG (600 DPI for publication)
-python build_trees.py sequences.fasta --visualize png --dpi 600
+python rrna_phylo_cli.py sequences.fasta --visualize png --dpi 600
 
 # SVG vector graphics (editable in Illustrator/Inkscape)
-python build_trees.py sequences.fasta --visualize svg
+python rrna_phylo_cli.py sequences.fasta --visualize svg
 ```
 
 **Requires:** `pip install ete3`
@@ -167,13 +176,13 @@ python build_trees.py sequences.fasta --visualize svg
 cd backend
 
 # Create test dataset (50 sequences, 1000bp)
-python test_output_organization.py
+python rrna_phylo_test.py
 
 # Build trees (takes ~6 seconds)
-python build_trees.py test_sequences.fasta
+python rrna_phylo_cli.py test_sequences.fasta
 
 # Verify output structure
-python test_output_organization.py --verify
+python rrna_phylo_test.py --verify
 
 # Clean up
 bash cleanup_test.sh
@@ -200,13 +209,13 @@ bash cleanup_test.sh
 
 ```bash
 # Use NNI tree search (fast, default)
-python build_phylogenetic_tree.py sequences.fasta --method nni
+python rrna_phylo_ml.py sequences.fasta --method nni
 
 # Use SPR tree search (thorough, slower)
-python build_phylogenetic_tree.py sequences.fasta --method spr
+python rrna_phylo_ml.py sequences.fasta --method spr
 
 # With bootstrap
-python build_phylogenetic_tree.py sequences.fasta --bootstrap 100
+python rrna_phylo_ml.py sequences.fasta --bootstrap 100
 ```
 
 **Output:**
@@ -221,13 +230,13 @@ Using the `--visualize` flag, you can customize tree visualizations:
 
 ```bash
 # Maximum likelihood with PDF output
-python build_phylogenetic_tree.py sequences.fasta --visualize pdf
+python rrna_phylo_ml.py sequences.fasta --visualize pdf
 
 # With bootstrap support shown
-python build_phylogenetic_tree.py sequences.fasta --bootstrap 100 --visualize pdf
+python rrna_phylo_ml.py sequences.fasta --bootstrap 100 --visualize pdf
 
 # Ultra high-resolution for publication (1200 DPI)
-python build_phylogenetic_tree.py sequences.fasta --visualize png --dpi 1200
+python rrna_phylo_ml.py sequences.fasta --visualize png --dpi 1200
 ```
 
 **Supported formats:** PDF, PNG, SVG, EPS
@@ -254,7 +263,7 @@ results/
 
 **Example:**
 ```bash
-python build_trees.py my_data.fasta
+python rrna_phylo_cli.py my_data.fasta
 # Creates: results/my_data/
 ```
 
@@ -328,9 +337,9 @@ rrna-phylo/
 │   │   └── visualization/             # Tree visualization
 │   │       ├── ascii_viz.py           # ASCII trees
 │   │       └── ete3_viz.py            # PDF/PNG/SVG (not integrated)
-│   ├── build_trees.py                 # Main CLI (all 3 methods)
-│   ├── build_phylogenetic_tree.py     # Advanced ML CLI
-│   ├── test_output_organization.py    # Test suite
+│   ├── rrna_phylo_cli.py                 # Main CLI (all 3 methods)
+│   ├── rrna_phylo_ml.py     # Advanced ML CLI
+│   ├── rrna_phylo_test.py    # Test suite
 │   ├── cleanup_test.sh                # Cleanup script
 │   ├── diagnose_openmp.py             # OpenMP diagnostics
 │   └── OPENMP_CONFLICT_EXPLANATION.md # OpenMP troubleshooting

@@ -119,7 +119,7 @@ def quick_build():
         visualize = ""
 
     # Build command
-    cmd = f'python build_trees.py "{input_file}" {visualize}'
+    cmd = f'python rrna_phylo_cli.py "{input_file}" {visualize}'
 
     print()
     print("=" * 70)
@@ -212,7 +212,7 @@ def custom_build():
 
     # Build command
     bootstrap_flag = f'--bootstrap {bootstrap}' if int(bootstrap) > 0 else ''
-    cmd = f'python build_trees.py "{input_file}" --method {method} {bootstrap_flag} {visualize} {output_dir}'
+    cmd = f'python rrna_phylo_cli.py "{input_file}" --method {method} {bootstrap_flag} {visualize} {output_dir}'
 
     print()
     print("=" * 70)
@@ -297,7 +297,7 @@ def advanced_ml():
 
     # Build command
     bootstrap_flag = f'--bootstrap {bootstrap}' if int(bootstrap) > 0 else ''
-    cmd = f'python build_phylogenetic_tree.py "{input_file}" --method {method} {bootstrap_flag} {visualize}'
+    cmd = f'python rrna_phylo_ml.py "{input_file}" --method {method} {bootstrap_flag} {visualize}'
 
     print()
     print("=" * 70)
@@ -339,7 +339,7 @@ def create_test_data():
 
     if confirm == 'y':
         print()
-        result = subprocess.run('python test_output_organization.py', shell=True)
+        result = subprocess.run('python rrna_phylo_test.py', shell=True)
 
         if result.returncode == 0:
             print()
