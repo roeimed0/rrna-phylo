@@ -86,6 +86,49 @@ def main_menu():
             input()
 
 
+def select_input_file():
+    """Let user select file from data folder or provide custom path."""
+    data_dir = Path('data')
+
+    # Check for files in data folder
+    if data_dir.exists():
+        fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
+    else:
+        fasta_files = []
+
+    if fasta_files:
+        print("Files in data/ folder:")
+        print()
+        for i, f in enumerate(fasta_files, 1):
+            file_size = f.stat().st_size
+            size_kb = file_size / 1024
+            print(f"  {i}. {f.name} ({size_kb:.1f} KB)")
+        print()
+        print(f"  {len(fasta_files) + 1}. Enter custom file path")
+        print()
+
+        choice = input(f"Select file (1-{len(fasta_files) + 1}): ").strip()
+
+        if choice.isdigit() and 1 <= int(choice) <= len(fasta_files):
+            return str(fasta_files[int(choice) - 1])
+        elif choice.isdigit() and int(choice) == len(fasta_files) + 1:
+            # Fall through to custom path
+            pass
+        else:
+            return None
+
+    # Custom path
+    print("Enter FASTA file path:")
+    print("  (Relative to current directory or absolute path)")
+    print()
+    input_file = input("Path: ").strip()
+
+    if not input_file:
+        return None
+
+    return input_file
+
+
 def quick_build():
     """Quick build with default settings."""
     clear_screen()
@@ -95,7 +138,7 @@ def quick_build():
     print()
 
     # Get input file
-    input_file = input("Enter FASTA file path: ").strip()
+    input_file = select_input_file()
 
     if not input_file:
         print("\nNo file specified.")
@@ -152,7 +195,7 @@ def custom_build():
     print()
 
     # Get input file
-    input_file = input("Enter FASTA file path: ").strip()
+    input_file = select_input_file()
 
     if not input_file:
         print("\nNo file specified.")
@@ -248,7 +291,7 @@ def advanced_ml():
     print()
 
     # Get input file
-    input_file = input("Enter FASTA file path: ").strip()
+    input_file = select_input_file()
 
     if not input_file:
         print("\nNo file specified.")

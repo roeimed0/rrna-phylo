@@ -38,11 +38,18 @@ cd backend
 
 ### Interactive Application (Easiest - Recommended)
 
-Launch the interactive menu with guided options:
+**Step 1: Place FASTA files in data folder (optional)**
+```bash
+# Copy your FASTA files to the data folder for easy access
+cp your_sequences.fasta backend/data/
+```
 
+**Step 2: Launch the interactive menu**
 ```bash
 python app.py
 ```
+
+The menu will display all files from `data/` folder for quick selection, or you can provide a custom path.
 
 **Or use built-in commands:**
 ```bash
@@ -313,6 +320,9 @@ Species_B         |-------------
 rrna-phylo/
 ├── README.md                          # This file
 ├── backend/
+│   ├── app.py                         # Main entry point (CLI & menu)
+│   ├── data/                          # Place your FASTA files here
+│   │   └── README.md                  # Data folder documentation
 │   ├── rrna_phylo/                    # Core package
 │   │   ├── io/                        # FASTA parsing
 │   │   │   └── fasta_parser.py
@@ -336,10 +346,11 @@ rrna-phylo/
 │   │   │   └── bootstrap.py           # Bootstrap analysis
 │   │   └── visualization/             # Tree visualization
 │   │       ├── ascii_viz.py           # ASCII trees
-│   │       └── ete3_viz.py            # PDF/PNG/SVG (not integrated)
-│   ├── rrna_phylo_cli.py                 # Main CLI (all 3 methods)
-│   ├── rrna_phylo_ml.py     # Advanced ML CLI
-│   ├── rrna_phylo_test.py    # Test suite
+│   │       └── ete3_viz.py            # PDF/PNG/SVG visualization
+│   ├── rrna_phylo_app.py              # Interactive menu
+│   ├── rrna_phylo_cli.py              # Main CLI (all 3 methods)
+│   ├── rrna_phylo_ml.py               # Advanced ML CLI
+│   ├── rrna_phylo_test.py             # Test suite
 │   ├── cleanup_test.sh                # Cleanup script
 │   ├── diagnose_openmp.py             # OpenMP diagnostics
 │   └── OPENMP_CONFLICT_EXPLANATION.md # OpenMP troubleshooting
