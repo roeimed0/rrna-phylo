@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """
-Clean FASTA headers to use species names instead of accession numbers.
+Clean FASTA headers to standard format: ID|Species_name
 
-This makes phylogenetic trees much more readable by showing species names
-like "Homo_sapiens" instead of accession numbers like "AB571241.1.1364_U".
+STANDARD FORMAT for rRNA-Phylo project:
+    >ID|Species_name
 
-Supports multiple header formats:
+Example:
+    >AB571241|Homo_sapiens
+    >NC_012920|Callithrix_jacchus
+
+This format provides:
+- Traceability: Keep original ID (accession, genome ID, etc.)
+- Readability: Species name shown in phylogenetic trees
+- Consistency: All trees use the same labeling scheme
+
+Supports conversion from multiple input formats:
 - PR2 format: >accession|taxonomy|...|Species_name
-- Simple format: >Species_name
 - NCBI format: >accession Species name description
+- Simple format: >Species_name (ID assigned as species name)
 
 Usage:
     python clean_fasta_headers.py input.fasta output.fasta
@@ -69,14 +78,15 @@ def extract_species_name(header):
     return species
 
 
-def clean_fasta_headers(input_file, output_file, keep_accession=False):
+def clean_fasta_headers(input_file, output_file, standard_format=True):
     """
-    Clean FASTA headers to show species names.
+    Clean FASTA headers to standard ID|Species_name format.
 
     Args:
         input_file: Input FASTA file
         output_file: Output FASTA file with cleaned headers
-        keep_accession: If True, keep accession as ">accession|Species_name"
+        standard_format: If True, use ID|Species_name format (default, recommended)
+                        If False, use Species_name only
     """
     print(f"Reading: {input_file}")
 
@@ -97,12 +107,26 @@ def clean_fasta_headers(input_file, output_file, keep_accession=False):
                 original_header = line[1:]  # Remove >
                 species_name = extract_species_name(original_header)
 
-                if keep_accession:
-                    # Keep accession number for traceability
-                    accession = original_header.split('|')[0] if '|' in original_header else original_header.split()[0]
+                # Extract ID (accession number)
+                if '|' in original_header:
+                    # PR2 format: first field is ID
+                    accession = original_header.split('|')[0]
+                elif ' ' in original_header:
+                    # NCBI format: first field is ID
+                    accession = original_header.split()[0]
+                else:
+                    # Simple format: use species name as ID
+                    accession = species_name
+
+                # Clean accession (remove special characters after dot)
+                accession = accession.split('.')[0] if '.' in accession else accession
+                accession = accession.split('_')[0] if '_U' in accession else accession
+
+                if standard_format:
+                    # Standard format: ID|Species_name
                     new_header = f"{accession}|{species_name}"
                 else:
-                    # Just species name
+                    # Species name only
                     new_header = species_name
 
                 current_header = new_header
@@ -138,28 +162,55 @@ def clean_fasta_headers(input_file, output_file, keep_accession=False):
             for i in range(0, len(seq), 80):
                 f.write(seq[i:i+80] + '\n')
 
-    print(f"\nDone! Headers cleaned.")
-    print(f"\nBefore: >AB571241.1.1364_U|Obazoa|...|Callithrix_jacchus")
-    print(f"After:  >{sequences[0][0]}")
+    print(f"\nDone! Headers cleaned to standard format.")
+    print(f"\nExample transformation:")
+    print(f"  Before: >AB571241.1.1364_U|Obazoa|...|Callithrix_jacchus")
+    print(f"  After:  >{sequences[0][0]}")
+    print(f"\nStandard format: ID|Species_name")
+    print(f"  - ID: Traceable accession/identifier")
+    print(f"  - Species_name: Readable name shown in phylogenetic trees")
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("Usage: python clean_fasta_headers.py input.fasta output.fasta [--keep-accession]")
+        print("=" * 70)
+        print("FASTA Header Cleaning Tool")
+        print("=" * 70)
         print()
-        print("Options:")
-        print("  --keep-accession    Keep accession number as 'accession|Species_name'")
+        print("Converts FASTA headers to standard format: ID|Species_name")
         print()
-        print("Example:")
-        print("  python clean_fasta_headers.py data.fasta data_cleaned.fasta")
+        print("USAGE:")
+        print("  python clean_fasta_headers.py input.fasta output.fasta [OPTIONS]")
+        print()
+        print("OPTIONS:")
+        print("  --species-only      Use species name only (no ID)")
+        print("                      Default: ID|Species_name (recommended)")
+        print()
+        print("EXAMPLES:")
+        print("  # Standard format (ID|Species_name)")
+        print("  python clean_fasta_headers.py pr2_data.fasta cleaned.fasta")
+        print()
+        print("  # Species name only")
+        print("  python clean_fasta_headers.py pr2_data.fasta cleaned.fasta --species-only")
+        print()
+        print("STANDARD FORMAT:")
+        print("  >AB571241|Homo_sapiens")
+        print("  >NC_012920|Callithrix_jacchus")
+        print()
+        print("  Benefits:")
+        print("    - Traceability: Keep original ID for reference")
+        print("    - Readability: Species name shown in phylogenetic trees")
+        print("    - Consistency: All FASTA files use same format")
+        print("=" * 70)
         sys.exit(1)
 
     input_file = sys.argv[1]
     output_file = sys.argv[2]
-    keep_accession = '--keep-accession' in sys.argv
+    species_only = '--species-only' in sys.argv
+    standard_format = not species_only  # Default to standard format
 
     if not Path(input_file).exists():
         print(f"Error: Input file not found: {input_file}")
         sys.exit(1)
 
-    clean_fasta_headers(input_file, output_file, keep_accession)
+    clean_fasta_headers(input_file, output_file, standard_format)
