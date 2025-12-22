@@ -36,7 +36,27 @@ conda install numpy scipy numba biopython
 cd backend
 ```
 
-### Build All Three Tree Types
+### Interactive Menu (Easiest - Recommended)
+
+For the easiest experience with guided options:
+
+```bash
+python menu.py
+```
+
+**Menu includes:**
+- ✅ Quick build (one-click with defaults)
+- ✅ Custom build (choose all options interactively)
+- ✅ Advanced ML (model selection + tree search)
+- ✅ Test data creation
+- ✅ Results viewer
+- ✅ Clean up tool
+- ✅ ETE3 installation helper
+- ✅ Built-in help
+
+**No command-line flags to remember!**
+
+### Build All Three Tree Types (Command Line)
 
 ```bash
 python build_trees.py sequences.fasta
@@ -473,7 +493,6 @@ Specialized agents:
 ### High Priority
 - [x] Integrate ETE3 visualization into CLI (PDF/PNG/SVG output) - DONE
 - [ ] Parallel bootstrap (joblib/multiprocessing)
-- [ ] Progress bars (tqdm)
 
 ### Medium Priority
 - [ ] Consensus tree methods (majority-rule, strict)
