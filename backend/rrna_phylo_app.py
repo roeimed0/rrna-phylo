@@ -49,36 +49,39 @@ def main_menu():
 
         print("Main Menu:")
         print()
-        print("  1. Build Trees (Quick - All 3 Methods)")
-        print("  2. Build Trees (Custom - Choose Options)")
-        print("  3. Build ML Tree (Advanced)")
-        print("  4. Create Test Dataset")
-        print("  5. View Results")
-        print("  6. Clean Up Results")
-        print("  7. Install ETE3 (Visualization)")
-        print("  8. Help & Documentation")
-        print("  9. Exit")
+        print("  1. Prepare FASTA File (Deduplicate + Clean Headers)")
+        print("  2. Build Trees (Quick - All 3 Methods)")
+        print("  3. Build Trees (Custom - Choose Options)")
+        print("  4. Build ML Tree (Advanced)")
+        print("  5. Create Test Dataset")
+        print("  6. View Results")
+        print("  7. Clean Up Results")
+        print("  8. Install ETE3 (Visualization)")
+        print("  9. Help & Documentation")
+        print("  10. Exit")
         print()
 
-        choice = input("Select option (1-9): ").strip()
+        choice = input("Select option (1-10): ").strip()
 
         if choice == '1':
-            quick_build()
+            prepare_fasta_file()
         elif choice == '2':
-            custom_build()
+            quick_build()
         elif choice == '3':
-            advanced_ml()
+            custom_build()
         elif choice == '4':
-            create_test_data()
+            advanced_ml()
         elif choice == '5':
-            view_results()
+            create_test_data()
         elif choice == '6':
-            cleanup_results()
+            view_results()
         elif choice == '7':
-            install_ete3()
+            cleanup_results()
         elif choice == '8':
-            show_help()
+            install_ete3()
         elif choice == '9':
+            show_help()
+        elif choice == '10':
             print("\nGoodbye!")
             sys.exit(0)
         else:
@@ -127,6 +130,83 @@ def select_input_file():
         return None
 
     return input_file
+
+
+def prepare_fasta_file():
+    """Prepare FASTA file: deduplicate + clean headers."""
+    clear_screen()
+    print_header()
+    print("Prepare FASTA File")
+    print("=" * 70)
+    print()
+    print("This tool prepares raw FASTA files for phylogenetic analysis by:")
+    print("  1. Deduplicating sequences (keeps longest per species)")
+    print("  2. Cleaning headers to standard ID|Species_name format")
+    print()
+
+    # Get input file
+    input_file = select_input_file()
+
+    if not input_file:
+        print("\nNo file specified.")
+        input("\nPress Enter to continue...")
+        return
+
+    if not Path(input_file).exists():
+        print(f"\nError: File not found: {input_file}")
+        input("\nPress Enter to continue...")
+        return
+
+    # Get output file
+    print()
+    print("Output file name:")
+    print("  (Suggest adding '_clean' or '_prepared' suffix)")
+    print()
+
+    # Suggest output name
+    input_path = Path(input_file)
+    suggested_output = input_path.parent / f"{input_path.stem}_clean{input_path.suffix}"
+    print(f"  Default: {suggested_output}")
+    print()
+
+    output_file = input("Output file (Enter for default): ").strip()
+    if not output_file:
+        output_file = str(suggested_output)
+
+    # Confirm overwrite if exists
+    if Path(output_file).exists():
+        print()
+        print(f"Warning: {output_file} already exists!")
+        confirm = input("Overwrite? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("\nCancelled.")
+            input("\nPress Enter to continue...")
+            return
+
+    print()
+    print("=" * 70)
+    print()
+
+    # Run preparation
+    result = subprocess.run(
+        f'python prepare_fasta.py "{input_file}" "{output_file}"',
+        shell=True
+    )
+
+    if result.returncode == 0:
+        print()
+        print("=" * 70)
+        print("SUCCESS!")
+        print("=" * 70)
+        print()
+        print(f"Prepared data saved to: {output_file}")
+        print()
+        print("You can now use this file for tree building (Options 2, 3, or 4)")
+    else:
+        print()
+        print("Preparation failed. Check the error messages above.")
+
+    input("\nPress Enter to continue...")
 
 
 def quick_build():

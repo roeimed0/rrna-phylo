@@ -61,6 +61,7 @@ python app.py --help                             # Show all options
 ```
 
 **Interactive menu includes:**
+- ✅ **Data preparation** (deduplicate + clean headers)
 - ✅ Quick build (one-click with defaults)
 - ✅ Custom build (choose all options interactively)
 - ✅ Advanced ML (model selection + tree search)
@@ -71,6 +72,26 @@ python app.py --help                             # Show all options
 - ✅ Built-in help
 
 **No command-line flags to remember!**
+
+### Data Preparation (Recommended First Step)
+
+If you have raw FASTA files with duplicates or messy headers:
+
+```bash
+# Interactive menu (easiest)
+python app.py
+# Select Option 1: Prepare FASTA File
+
+# Or direct CLI
+python prepare_fasta.py data/raw_data.fasta data/clean_data.fasta
+```
+
+**What it does:**
+1. Deduplicates sequences (keeps longest per species)
+2. Cleans headers to standard `ID|Species_name` format
+3. Example: `>AB571241.1|Obazoa|...|Homo_sapiens` → `>AB571241|Homo_sapiens`
+
+**Result:** Clean, standardized FASTA ready for phylogenetic analysis with readable tree labels.
 
 ### Build All Three Tree Types (Direct CLI)
 
@@ -351,6 +372,9 @@ rrna-phylo/
 │   ├── rrna_phylo_cli.py              # Main CLI (all 3 methods)
 │   ├── rrna_phylo_ml.py               # Advanced ML CLI
 │   ├── rrna_phylo_test.py             # Test suite
+│   ├── prepare_fasta.py               # Data preparation (deduplicate + clean)
+│   ├── deduplicate_fasta.py           # Advanced: deduplicate only
+│   ├── clean_fasta_headers.py         # Advanced: clean headers only
 │   ├── cleanup_test.sh                # Cleanup script
 │   ├── diagnose_openmp.py             # OpenMP diagnostics
 │   └── OPENMP_CONFLICT_EXPLANATION.md # OpenMP troubleshooting
