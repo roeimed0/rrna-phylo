@@ -53,15 +53,14 @@ def main_menu():
         print("  2. Build Trees (Quick - All 3 Methods)")
         print("  3. Build Trees (Custom - Choose Options)")
         print("  4. Build ML Tree (Advanced)")
-        print("  5. Create Test Dataset")
-        print("  6. View Results")
-        print("  7. Clean Up Files (Data + Results)")
-        print("  8. Install ETE3 (Visualization)")
-        print("  9. Help & Documentation")
-        print("  10. Exit")
+        print("  5. View Results")
+        print("  6. Clean Up Files (Data + Results)")
+        print("  7. Install ETE3 (Visualization)")
+        print("  8. Help & Documentation")
+        print("  9. Exit")
         print()
 
-        choice = input("Select option (1-10): ").strip()
+        choice = input("Select option (1-9): ").strip()
 
         if choice == '1':
             prepare_fasta_file()
@@ -72,16 +71,14 @@ def main_menu():
         elif choice == '4':
             advanced_ml()
         elif choice == '5':
-            create_test_data()
-        elif choice == '6':
             view_results()
-        elif choice == '7':
+        elif choice == '6':
             cleanup_results()
-        elif choice == '8':
+        elif choice == '7':
             install_ete3()
-        elif choice == '9':
+        elif choice == '8':
             show_help()
-        elif choice == '10':
+        elif choice == '9':
             print("\nGoodbye!")
             sys.exit(0)
         else:
