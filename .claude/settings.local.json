@@ -142,7 +142,8 @@
       "Bash(Craniata_X)",
       "Bash(Mammalia)",
       "Bash(Homo)",
-      "Bash(Homo_sapiens\"\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(Homo_sapiens\"\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(KMP_DUPLICATE_LIB_OK=TRUE timeout:*)"
     ],
     "deny": [],
     "ask": []

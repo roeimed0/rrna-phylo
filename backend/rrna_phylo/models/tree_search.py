@@ -212,16 +212,15 @@ def nni_search(
         base_model_name = model_name
 
     # Create the selected model and get Q matrix + base frequencies
+    from rrna_phylo.models.substitution_models import get_model, compute_empirical_frequencies, GTRModel
+
     if base_model_name == "GTR":
-        # GTR model uses old interface with estimate_parameters
-        from rrna_phylo.models.ml_tree_level3 import GTRModel as LegacyGTRModel
-        model = LegacyGTRModel()
-        model.estimate_parameters(sequences)
+        # GTR model uses legacy-compatible estimate_from_sequences classmethod
+        model = GTRModel.estimate_from_sequences(sequences)
         Q = model.Q
         base_freq = model.base_freq
     else:
         # Non-GTR models use new substitution_models interface
-        from rrna_phylo.models.substitution_models import get_model, compute_empirical_frequencies
         model_obj = get_model(base_model_name)
 
         # Compute empirical base frequencies from sequences
