@@ -55,7 +55,7 @@ def main_menu():
         print("  4. Build ML Tree (Advanced)")
         print("  5. Create Test Dataset")
         print("  6. View Results")
-        print("  7. Clean Up Test Files")
+        print("  7. Clean Up Files (Data + Results)")
         print("  8. Install ETE3 (Visualization)")
         print("  9. Help & Documentation")
         print("  10. Exit")
@@ -537,39 +537,266 @@ def view_results():
 
 
 def cleanup_results():
-    """Clean up test files and results."""
+    """Clean up files and results with user selection."""
     clear_screen()
     print_header()
-    print("Clean Up Test Files")
+    print("Clean Up Files")
     print("=" * 70)
     print()
 
-    print("This will remove:")
-    print("  - test_sequences.fasta (generated test data)")
-    print("  - results/test_sequences/ (test results only)")
+    print("What would you like to clean?")
     print()
-    print("This will NOT remove:")
-    print("  - data/ folder and your prepared FASTA files")
-    print("  - results/ for other datasets")
-    print()
-    print("WARNING: This cannot be undone!")
+    print("  1. Test files only (test_sequences.fasta + results/test_sequences/)")
+    print("  2. Select specific result folders to delete")
+    print("  3. Delete ALL results (keeps data/ folder)")
+    print("  4. Select specific data/ FASTA files to delete")
+    print("  5. Delete ALL data/ FASTA files")
+    print("  6. Clean everything (data/ + results/)")
+    print("  7. Cancel")
     print()
 
-    confirm = input("Continue with cleanup? (yes/no): ").strip().lower()
+    choice = input("Select option (1-7): ").strip()
 
-    if confirm == 'yes':
-        print()
-        result = subprocess.run('bash cleanup_test.sh', shell=True)
-
-        if result.returncode == 0:
-            print()
-            print("Cleanup complete!")
-        else:
-            print()
-            print("Cleanup script not found. Manual cleanup:")
-            print("  rm -rf test_sequences.fasta results/")
+    if choice == '1':
+        # Clean test files only
+        cleanup_test_files()
+    elif choice == '2':
+        # Select specific results
+        cleanup_select_results()
+    elif choice == '3':
+        # Clean all results
+        cleanup_all_results()
+    elif choice == '4':
+        # Select specific data files
+        cleanup_select_data()
+    elif choice == '5':
+        # Clean all data
+        cleanup_all_data()
+    elif choice == '6':
+        # Clean everything
+        cleanup_everything()
+    elif choice == '7':
+        pass  # Cancel
+    else:
+        print("\nInvalid choice.")
 
     input("\nPress Enter to continue...")
+
+
+def cleanup_test_files():
+    """Clean up test files only."""
+    print()
+    print("=" * 70)
+    print("CLEAN TEST FILES")
+    print("=" * 70)
+    print()
+    print("This will remove:")
+    print("  - test_sequences.fasta")
+    print("  - results/test_sequences/")
+    print()
+
+    confirm = input("Continue? (yes/no): ").strip().lower()
+    if confirm == 'yes':
+        result = subprocess.run('bash cleanup_test.sh', shell=True)
+        if result.returncode == 0:
+            print("\nTest files cleaned!")
+
+
+def cleanup_select_results():
+    """Let user select which result folders to delete."""
+    print()
+    print("=" * 70)
+    print("SELECT RESULTS TO DELETE")
+    print("=" * 70)
+    print()
+
+    results_dir = Path('results')
+    if not results_dir.exists() or not any(results_dir.iterdir()):
+        print("No results found.")
+        return
+
+    folders = [f for f in results_dir.iterdir() if f.is_dir()]
+    if not folders:
+        print("No result folders found.")
+        return
+
+    print("Result folders:")
+    print()
+    for i, folder in enumerate(folders, 1):
+        size = sum(f.stat().st_size for f in folder.rglob('*') if f.is_file())
+        size_mb = size / (1024 * 1024)
+        print(f"  {i}. {folder.name} ({size_mb:.1f} MB)")
+    print()
+
+    selection = input("Enter numbers to delete (comma-separated, or 'all'): ").strip()
+
+    if selection.lower() == 'all':
+        to_delete = folders
+    else:
+        try:
+            indices = [int(x.strip()) - 1 for x in selection.split(',')]
+            to_delete = [folders[i] for i in indices if 0 <= i < len(folders)]
+        except (ValueError, IndexError):
+            print("\nInvalid selection.")
+            return
+
+    if not to_delete:
+        return
+
+    print()
+    print("Will delete:")
+    for folder in to_delete:
+        print(f"  - {folder}")
+    print()
+
+    confirm = input("Continue? (yes/no): ").strip().lower()
+    if confirm == 'yes':
+        import shutil
+        for folder in to_delete:
+            shutil.rmtree(folder)
+            print(f"Deleted: {folder}")
+        print("\nSelected results deleted!")
+
+
+def cleanup_all_results():
+    """Delete all results."""
+    print()
+    print("=" * 70)
+    print("DELETE ALL RESULTS")
+    print("=" * 70)
+    print()
+
+    results_dir = Path('results')
+    if not results_dir.exists():
+        print("No results directory found.")
+        return
+
+    print("WARNING: This will delete the entire results/ directory!")
+    print()
+
+    confirm = input("Continue? (yes/no): ").strip().lower()
+    if confirm == 'yes':
+        import shutil
+        shutil.rmtree(results_dir)
+        print("\nAll results deleted!")
+
+
+def cleanup_select_data():
+    """Let user select which data files to delete."""
+    print()
+    print("=" * 70)
+    print("SELECT DATA FILES TO DELETE")
+    print("=" * 70)
+    print()
+
+    data_dir = Path('data')
+    if not data_dir.exists():
+        print("No data directory found.")
+        return
+
+    fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
+    if not fasta_files:
+        print("No FASTA files found in data/.")
+        return
+
+    print("FASTA files in data/:")
+    print()
+    for i, f in enumerate(fasta_files, 1):
+        size_kb = f.stat().st_size / 1024
+        print(f"  {i}. {f.name} ({size_kb:.1f} KB)")
+    print()
+
+    selection = input("Enter numbers to delete (comma-separated, or 'all'): ").strip()
+
+    if selection.lower() == 'all':
+        to_delete = fasta_files
+    else:
+        try:
+            indices = [int(x.strip()) - 1 for x in selection.split(',')]
+            to_delete = [fasta_files[i] for i in indices if 0 <= i < len(fasta_files)]
+        except (ValueError, IndexError):
+            print("\nInvalid selection.")
+            return
+
+    if not to_delete:
+        return
+
+    print()
+    print("Will delete:")
+    for f in to_delete:
+        print(f"  - {f}")
+    print()
+
+    confirm = input("Continue? (yes/no): ").strip().lower()
+    if confirm == 'yes':
+        for f in to_delete:
+            f.unlink()
+            print(f"Deleted: {f}")
+        print("\nSelected files deleted!")
+
+
+def cleanup_all_data():
+    """Delete all FASTA files from data/."""
+    print()
+    print("=" * 70)
+    print("DELETE ALL DATA FILES")
+    print("=" * 70)
+    print()
+
+    data_dir = Path('data')
+    if not data_dir.exists():
+        print("No data directory found.")
+        return
+
+    fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
+    if not fasta_files:
+        print("No FASTA files found in data/.")
+        return
+
+    print(f"WARNING: This will delete ALL {len(fasta_files)} FASTA files from data/!")
+    print()
+
+    confirm = input("Continue? (yes/no): ").strip().lower()
+    if confirm == 'yes':
+        for f in fasta_files:
+            f.unlink()
+        print(f"\nDeleted {len(fasta_files)} FASTA files!")
+
+
+def cleanup_everything():
+    """Delete everything (data + results)."""
+    print()
+    print("=" * 70)
+    print("DELETE EVERYTHING")
+    print("=" * 70)
+    print()
+
+    print("WARNING: This will delete:")
+    print("  - All FASTA files in data/")
+    print("  - All result folders in results/")
+    print()
+    print("This CANNOT be undone!")
+    print()
+
+    confirm = input("Are you SURE? Type 'DELETE EVERYTHING' to confirm: ").strip()
+    if confirm == 'DELETE EVERYTHING':
+        import shutil
+
+        # Delete data FASTA files
+        data_dir = Path('data')
+        if data_dir.exists():
+            fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
+            for f in fasta_files:
+                f.unlink()
+            print(f"Deleted {len(fasta_files)} data files")
+
+        # Delete results
+        results_dir = Path('results')
+        if results_dir.exists():
+            shutil.rmtree(results_dir)
+            print("Deleted results/")
+
+        print("\nEverything deleted!")
 
 
 def install_ete3():
