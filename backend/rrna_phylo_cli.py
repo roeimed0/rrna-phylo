@@ -49,21 +49,52 @@ except ImportError:
     ETE3_AVAILABLE = False
 
 
-def visualize_tree_ascii(tree, title="PHYLOGENETIC TREE"):
-    """Create simple ASCII visualization of tree."""
+def visualize_tree_ascii(tree, title="PHYLOGENETIC TREE", max_width=120):
+    """Create ASCII visualization of tree with proper branch diagram."""
     lines = []
     lines.append("=" * 70)
     lines.append(title)
     lines.append("=" * 70)
     lines.append("")
 
-    # Get leaf names
-    taxa = tree.get_leaf_names()
-    lines.append(f"Taxa ({len(taxa)}):")
-    for i, taxon in enumerate(taxa, 1):
-        lines.append(f"  {i:2d}. {taxon}")
+    # Draw the actual tree structure
+    def _draw_tree(node, prefix="", is_last=True, is_root=True):
+        """Recursively draw tree structure."""
+        result = []
 
+        if node.is_leaf():
+            # Leaf node - show species name with branch length
+            branch_char = "`-" if is_last else "|-"
+            if is_root:
+                result.append(f"{node.name} ({node.distance:.6f})")
+            else:
+                result.append(f"{prefix}{branch_char} {node.name} ({node.distance:.6f})")
+        else:
+            # Internal node
+            if not is_root:
+                branch_char = "`-" if is_last else "|-"
+                support_str = f" [{node.support:.1f}]" if node.support is not None else ""
+                result.append(f"{prefix}{branch_char} Internal{support_str} ({node.distance:.6f})")
+                prefix += "   " if is_last else "|  "
+
+            # Draw children (right subtree first for better visual ordering)
+            if node.right:
+                result.extend(_draw_tree(node.right, prefix, False, False))
+            if node.left:
+                result.extend(_draw_tree(node.left, prefix, True, False))
+
+        return result
+
+    tree_lines = _draw_tree(tree)
+    lines.extend(tree_lines)
     lines.append("")
+
+    # Add summary statistics
+    taxa = tree.get_leaf_names()
+    lines.append(f"Taxa: {len(taxa)}")
+    lines.append("")
+
+    # Add Newick format for reference
     lines.append("Newick Format:")
     lines.append(tree.to_newick() + ";")
     lines.append("")

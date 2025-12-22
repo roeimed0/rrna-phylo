@@ -134,7 +134,15 @@
       "Bash([ -f benchmark_results.txt ])",
       "Bash(git rm:*)",
       "Bash(mkdir:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(Obazoa)",
+      "Bash(Opisthokonta)",
+      "Bash(...)",
+      "Bash(Craniata)",
+      "Bash(Craniata_X)",
+      "Bash(Mammalia)",
+      "Bash(Homo)",
+      "Bash(Homo_sapiens\"\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "deny": [],
     "ask": []
