@@ -34,19 +34,18 @@ python prepare_fasta.py your_data.fasta cleaned_data.fasta
 
 ## Test Datasets
 
-The `test/` folder contains small FASTA files for quick testing:
+The `test/` folder contains real biological datasets for testing:
 
-- **mammals_test.fasta** - 5 mammalian species
-- **birds_test.fasta** - 5 bird species
-- **fish_test.fasta** - 5 fish species
-- **bacteria_test.fasta** - 5 bacterial species (16S rRNA)
-- **fungi_test.fasta** - 5 fungal species (18S rRNA)
+- **mammals_test.fasta** - 34 mammalian species (60 KB)
+- **Arcosauria_test.fasta** - 126 reptile/bird species (186 KB)
+- **cartilaginous_fish_test.fasta** - 29 shark/ray species (53 KB)
 
 These files:
 - Ship with the project for immediate testing
 - Use standard `ID|Species_name` format
 - Are protected from cleanup operations
-- Allow you to test tree building without downloading data
+- Contain real 18S rRNA sequences from PR2 database
+- Perfect for testing all tree building methods
 
 ## Supported File Formats
 
@@ -59,14 +58,11 @@ These files:
 ```
 data/
 ├── test/
-│   ├── mammals_test.fasta
-│   ├── birds_test.fasta
-│   ├── fish_test.fasta
-│   ├── bacteria_test.fasta
-│   └── fungi_test.fasta
+│   ├── mammals_test.fasta (34 species)
+│   ├── Arcosauria_test.fasta (126 species)
+│   └── cartilaginous_fish_test.fasta (29 species)
 ├── pr2_Mammalia_2025-12-22.fasta
-├── bacterial_16s.fasta
-└── eukaryotic_18s.fasta
+└── your_custom_data.fasta
 ```
 
 When you use the interactive menu (Options 1, 2, or 3), files from this folder will be displayed for quick selection.

@@ -42,10 +42,13 @@ cd backend
 ```bash
 python app.py
 # Select Option 2: Build Trees (Quick)
-# Choose a test dataset (mammals_test.fasta, birds_test.fasta, etc.)
+# Choose a test dataset:
+#   - mammals_test.fasta (34 species)
+#   - Arcosauria_test.fasta (126 species - reptiles/birds)
+#   - cartilaginous_fish_test.fasta (29 species - sharks/rays)
 ```
 
-Test datasets ship with the project in `data/test/` - perfect for trying the tool immediately!
+Real biological test datasets ship with the project in `data/test/` - perfect for trying the tool immediately!
 
 **Step 1: Place FASTA files in data folder (optional)**
 ```bash
