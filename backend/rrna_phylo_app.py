@@ -92,29 +92,52 @@ def main_menu():
 def select_input_file():
     """Let user select file from data folder or provide custom path."""
     data_dir = Path('data')
+    test_dir = data_dir / 'test'
 
-    # Check for files in data folder
+    # Check for test datasets
+    test_files = []
+    if test_dir.exists():
+        test_files = list(test_dir.glob('*.fasta')) + list(test_dir.glob('*.fa')) + list(test_dir.glob('*.fna'))
+
+    # Check for user data files (root data folder only)
+    user_files = []
     if data_dir.exists():
-        fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
-    else:
-        fasta_files = []
+        user_files = [f for f in data_dir.glob('*.fasta') if f.parent == data_dir]
+        user_files += [f for f in data_dir.glob('*.fa') if f.parent == data_dir]
+        user_files += [f for f in data_dir.glob('*.fna') if f.parent == data_dir]
 
-    if fasta_files:
-        print("Files in data/ folder:")
-        print()
-        for i, f in enumerate(fasta_files, 1):
-            file_size = f.stat().st_size
-            size_kb = file_size / 1024
-            print(f"  {i}. {f.name} ({size_kb:.1f} KB)")
-        print()
-        print(f"  {len(fasta_files) + 1}. Enter custom file path")
+    all_files = test_files + user_files
+
+    if all_files:
+        # Show test datasets first
+        if test_files:
+            print("Test datasets (data/test/):")
+            print()
+            for i, f in enumerate(test_files, 1):
+                file_size = f.stat().st_size
+                size_kb = file_size / 1024
+                print(f"  {i}. {f.name} ({size_kb:.1f} KB)")
+            print()
+
+        # Then show user data
+        if user_files:
+            print("Your data (data/):")
+            print()
+            offset = len(test_files)
+            for i, f in enumerate(user_files, offset + 1):
+                file_size = f.stat().st_size
+                size_kb = file_size / 1024
+                print(f"  {i}. {f.name} ({size_kb:.1f} KB)")
+            print()
+
+        print(f"  {len(all_files) + 1}. Enter custom file path")
         print()
 
-        choice = input(f"Select file (1-{len(fasta_files) + 1}): ").strip()
+        choice = input(f"Select file (1-{len(all_files) + 1}): ").strip()
 
-        if choice.isdigit() and 1 <= int(choice) <= len(fasta_files):
-            return str(fasta_files[int(choice) - 1])
-        elif choice.isdigit() and int(choice) == len(fasta_files) + 1:
+        if choice.isdigit() and 1 <= int(choice) <= len(all_files):
+            return str(all_files[int(choice) - 1])
+        elif choice.isdigit() and int(choice) == len(all_files) + 1:
             # Fall through to custom path
             pass
         else:
@@ -694,12 +717,18 @@ def cleanup_select_data():
         print("No data directory found.")
         return
 
-    fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
+    # Only list files from root data folder (not test/)
+    fasta_files = [f for f in data_dir.glob('*.fasta') if f.parent == data_dir]
+    fasta_files += [f for f in data_dir.glob('*.fa') if f.parent == data_dir]
+    fasta_files += [f for f in data_dir.glob('*.fna') if f.parent == data_dir]
+
     if not fasta_files:
         print("No FASTA files found in data/.")
+        print("(Test datasets in data/test/ are protected)")
         return
 
     print("FASTA files in data/:")
+    print("(Test datasets in data/test/ are protected)")
     print()
     for i, f in enumerate(fasta_files, 1):
         size_kb = f.stat().st_size / 1024
@@ -748,12 +777,18 @@ def cleanup_all_data():
         print("No data directory found.")
         return
 
-    fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
+    # Only delete files from root data folder (not test/)
+    fasta_files = [f for f in data_dir.glob('*.fasta') if f.parent == data_dir]
+    fasta_files += [f for f in data_dir.glob('*.fa') if f.parent == data_dir]
+    fasta_files += [f for f in data_dir.glob('*.fna') if f.parent == data_dir]
+
     if not fasta_files:
         print("No FASTA files found in data/.")
+        print("(Test datasets in data/test/ are protected)")
         return
 
     print(f"WARNING: This will delete ALL {len(fasta_files)} FASTA files from data/!")
+    print("(Test datasets in data/test/ will be preserved)")
     print()
 
     confirm = input("Continue? (yes/no): ").strip().lower()
@@ -772,7 +807,7 @@ def cleanup_everything():
     print()
 
     print("WARNING: This will delete:")
-    print("  - All FASTA files in data/")
+    print("  - All FASTA files in data/ (except test/)")
     print("  - All result folders in results/")
     print()
     print("This CANNOT be undone!")
@@ -782,13 +817,15 @@ def cleanup_everything():
     if confirm == 'DELETE EVERYTHING':
         import shutil
 
-        # Delete data FASTA files
+        # Delete data FASTA files (only from root data folder, not test/)
         data_dir = Path('data')
         if data_dir.exists():
-            fasta_files = list(data_dir.glob('*.fasta')) + list(data_dir.glob('*.fa')) + list(data_dir.glob('*.fna'))
+            fasta_files = [f for f in data_dir.glob('*.fasta') if f.parent == data_dir]
+            fasta_files += [f for f in data_dir.glob('*.fa') if f.parent == data_dir]
+            fasta_files += [f for f in data_dir.glob('*.fna') if f.parent == data_dir]
             for f in fasta_files:
                 f.unlink()
-            print(f"Deleted {len(fasta_files)} data files")
+            print(f"Deleted {len(fasta_files)} data files (test datasets preserved)")
 
         # Delete results
         results_dir = Path('results')

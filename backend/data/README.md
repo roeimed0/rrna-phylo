@@ -32,6 +32,22 @@ python app.py
 python prepare_fasta.py your_data.fasta cleaned_data.fasta
 ```
 
+## Test Datasets
+
+The `test/` folder contains small FASTA files for quick testing:
+
+- **mammals_test.fasta** - 5 mammalian species
+- **birds_test.fasta** - 5 bird species
+- **fish_test.fasta** - 5 fish species
+- **bacteria_test.fasta** - 5 bacterial species (16S rRNA)
+- **fungi_test.fasta** - 5 fungal species (18S rRNA)
+
+These files:
+- Ship with the project for immediate testing
+- Use standard `ID|Species_name` format
+- Are protected from cleanup operations
+- Allow you to test tree building without downloading data
+
 ## Supported File Formats
 
 - `.fasta` - Standard FASTA format
@@ -42,6 +58,12 @@ python prepare_fasta.py your_data.fasta cleaned_data.fasta
 
 ```
 data/
+├── test/
+│   ├── mammals_test.fasta
+│   ├── birds_test.fasta
+│   ├── fish_test.fasta
+│   ├── bacteria_test.fasta
+│   └── fungi_test.fasta
 ├── pr2_Mammalia_2025-12-22.fasta
 ├── bacterial_16s.fasta
 └── eukaryotic_18s.fasta

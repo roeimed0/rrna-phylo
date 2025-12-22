@@ -38,6 +38,15 @@ cd backend
 
 ### Interactive Application (Easiest - Recommended)
 
+**Quick Test (No Data Required)**
+```bash
+python app.py
+# Select Option 2: Build Trees (Quick)
+# Choose a test dataset (mammals_test.fasta, birds_test.fasta, etc.)
+```
+
+Test datasets ship with the project in `data/test/` - perfect for trying the tool immediately!
+
 **Step 1: Place FASTA files in data folder (optional)**
 ```bash
 # Copy your FASTA files to the data folder for easy access

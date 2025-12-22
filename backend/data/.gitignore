@@ -3,8 +3,10 @@
 *.fa
 *.fna
 
-# Except small example files (if any)
-# !example.fasta
+# Except test dataset
+!test/*.fasta
+!test/*.fa
+!test/*.fna
 
 # Keep the README
 !README.md
