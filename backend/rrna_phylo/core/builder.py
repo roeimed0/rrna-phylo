@@ -200,16 +200,16 @@ class PhylogeneticTreeBuilder:
 
         return tree
 
-    def build_ml_tree(self, sequences: List[Sequence], alpha: float = 1.0, skip_model_selection: bool = False) -> Tuple[TreeNode, float]:
+    def build_ml_tree(self, sequences: List[Sequence], alpha: float = 1.0, skip_model_selection: bool = True) -> Tuple[TreeNode, float]:
         """
-        Build Maximum Likelihood tree using Level 4 (automatic model selection + tree search).
+        Build Maximum Likelihood tree using Level 4 (GTR+Gamma model with NNI tree search).
 
-        Works for DNA/RNA sequences with automatic GTR model selection.
+        Works for DNA/RNA sequences using GTR+Gamma model directly (model selection skipped for performance).
 
         Args:
             sequences: Aligned sequences
             alpha: Gamma shape parameter (1.0 = moderate rate variation, or 'auto' for optimization)
-            skip_model_selection: If True, use GTR+G directly (10x faster, model selection currently broken)
+            skip_model_selection: If True, use GTR+G directly (10x faster, default=True)
 
         Returns:
             (ml_tree, log_likelihood)
