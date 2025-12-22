@@ -111,23 +111,27 @@ def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0,
     print("[2/3] Building phylogenetic trees...")
     builder = PhylogeneticTreeBuilder(verbose=True)
 
+    # Detect sequence type and align if needed
+    builder.detect_and_validate(sequences)
+    aligned_seqs = builder._align_sequences(sequences)
+
     trees = {}
 
     if method in ['all', 'upgma']:
         print("\n--- UPGMA Tree ---")
-        upgma_tree = builder.build_upgma_tree(sequences)
+        upgma_tree = builder.build_upgma_tree(aligned_seqs)
         trees['upgma'] = ('UPGMA', upgma_tree, None)
         print()
 
     if method in ['all', 'bionj']:
         print("\n--- BioNJ Tree ---")
-        bionj_tree = builder.build_bionj_tree(sequences)
+        bionj_tree = builder.build_bionj_tree(aligned_seqs)
         trees['bionj'] = ('BioNJ', bionj_tree, None)
         print()
 
     if method in ['all', 'ml']:
         print("\n--- Maximum Likelihood Tree ---")
-        ml_tree, logL = builder.build_ml_tree(sequences, alpha=1.0)
+        ml_tree, logL = builder.build_ml_tree(aligned_seqs, alpha=1.0)
         trees['ml'] = ('Maximum Likelihood', ml_tree, logL)
         print()
 
@@ -141,7 +145,7 @@ def build_all_trees(input_file, output_dir="results", method="all", bootstrap=0,
     summary_lines.append(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     summary_lines.append(f"Input: {input_file}")
     summary_lines.append(f"Sequences: {len(sequences)}")
-    summary_lines.append(f"Alignment length: {len(sequences[0].sequence)} bp")
+    summary_lines.append(f"Alignment length: {aligned_seqs[0].aligned_length} bp")
     summary_lines.append("")
 
     for key, (name, tree, logL) in trees.items():
