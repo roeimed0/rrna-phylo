@@ -373,8 +373,6 @@ rrna-phylo/
 │   ├── rrna_phylo_ml.py               # Advanced ML CLI
 │   ├── rrna_phylo_test.py             # Test suite
 │   ├── prepare_fasta.py               # Data preparation (deduplicate + clean)
-│   ├── deduplicate_fasta.py           # Advanced: deduplicate only
-│   ├── clean_fasta_headers.py         # Advanced: clean headers only
 │   ├── cleanup_test.sh                # Cleanup script
 │   ├── diagnose_openmp.py             # OpenMP diagnostics
 │   └── OPENMP_CONFLICT_EXPLANATION.md # OpenMP troubleshooting

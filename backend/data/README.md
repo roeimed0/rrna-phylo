@@ -22,9 +22,14 @@ Place your FASTA files here for easy access from the interactive menu.
 - **Readability**: Phylogenetic trees show species names instead of cryptic IDs
 - **Consistency**: All trees use the same labeling scheme
 
-**To convert your FASTA files to this format:**
+**To prepare your FASTA files (deduplicate + clean headers):**
 ```bash
-python clean_fasta_headers.py your_data.fasta cleaned_data.fasta
+# Interactive menu (recommended)
+python app.py
+# Select Option 1: Prepare FASTA File
+
+# Or direct command
+python prepare_fasta.py your_data.fasta cleaned_data.fasta
 ```
 
 ## Supported File Formats
