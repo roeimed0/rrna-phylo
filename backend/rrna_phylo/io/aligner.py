@@ -46,7 +46,8 @@ class MuscleAligner:
         if max_iterations is not None:
             cmd.extend(["-maxiters", str(max_iterations)])
 
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        # Timeout: 30 minutes (1800s) for large datasets (100+ sequences)
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
         if r.returncode != 0:
             raise RuntimeError(f"MUSCLE alignment failed:\nSTDOUT:\n{r.stdout}\nSTDERR:\n{r.stderr}")
 
