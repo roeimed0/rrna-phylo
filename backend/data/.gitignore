@@ -3,7 +3,7 @@
 *.fa
 *.fna
 
-# Except test dataset
+# Except test datasets (both aligned and unaligned)
 !test/*.fasta
 !test/*.fa
 !test/*.fna

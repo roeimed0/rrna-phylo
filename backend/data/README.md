@@ -36,9 +36,28 @@ python prepare_fasta.py your_data.fasta cleaned_data.fasta
 
 The `test/` folder contains real biological datasets for testing:
 
+### Unaligned (for testing MUSCLE alignment):
 - **mammals_test.fasta** - 34 mammalian species (60 KB)
 - **Arcosauria_test.fasta** - 111 reptile/bird species (148 KB)
 - **cartilaginous_fish_test.fasta** - 28 shark/ray species (50 KB)
+
+### Pre-aligned (for fast tree building):
+- **mammals_test_aligned.fasta** - 34 species, 2132 bp aligned (73 KB)
+- **Arcosauria_test_aligned.fasta** - 111 species, 1916 bp aligned (237 KB)
+- **cartilaginous_fish_test_aligned.fasta** - 28 species, 1827 bp aligned (57 KB)
+
+**Performance comparison:**
+- Unaligned: Runs MUSCLE alignment (slow but automatic)
+- Aligned: Use `--pre-aligned` flag (5-10x faster!)
+
+**Usage:**
+```bash
+# Slow: Runs MUSCLE alignment
+python rrna_phylo_cli.py data/test/mammals_test.fasta
+
+# Fast: Skips MUSCLE (use pre-aligned file)
+python rrna_phylo_cli.py data/test/mammals_test_aligned.fasta --pre-aligned
+```
 
 These files:
 - Ship with the project for immediate testing

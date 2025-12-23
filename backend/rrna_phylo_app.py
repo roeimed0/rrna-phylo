@@ -250,6 +250,14 @@ def quick_build():
         input("\nPress Enter to continue...")
         return
 
+    # Ask if sequences are pre-aligned
+    print()
+    print("Are your sequences already aligned?")
+    print("  - If YES: Skips MUSCLE (5-30x faster!)")
+    print("  - If NO: Runs MUSCLE alignment (automatic)")
+    pre_aligned = input("Pre-aligned? (y/n): ").strip().lower()
+    pre_aligned_flag = "--pre-aligned" if pre_aligned == 'y' else ""
+
     # Ask about visualization
     print()
     if check_ete3():
@@ -262,7 +270,7 @@ def quick_build():
         visualize = ""
 
     # Build command
-    cmd = f'python rrna_phylo_cli.py "{input_file}" {visualize}'
+    cmd = f'python rrna_phylo_cli.py "{input_file}" {pre_aligned_flag} {visualize}'
 
     print()
     print("=" * 70)
@@ -319,6 +327,14 @@ def custom_build():
     method_map = {'1': 'all', '2': 'upgma', '3': 'bionj', '4': 'ml'}
     method = method_map.get(method_choice, 'all')
 
+    # Pre-aligned option
+    print()
+    print("Are your sequences already aligned?")
+    print("  - If YES: Skips MUSCLE (5-30x faster!)")
+    print("  - If NO: Runs MUSCLE alignment (automatic)")
+    pre_aligned = input("Pre-aligned? (y/n): ").strip().lower()
+    pre_aligned_flag = "--pre-aligned" if pre_aligned == 'y' else ""
+
     # Bootstrap
     print()
     bootstrap = input("Bootstrap replicates (0 = disabled, 100 = publication): ").strip()
@@ -355,7 +371,7 @@ def custom_build():
 
     # Build command
     bootstrap_flag = f'--bootstrap {bootstrap}' if int(bootstrap) > 0 else ''
-    cmd = f'python rrna_phylo_cli.py "{input_file}" --method {method} {bootstrap_flag} {visualize} {output_dir}'
+    cmd = f'python rrna_phylo_cli.py "{input_file}" --method {method} {pre_aligned_flag} {bootstrap_flag} {visualize} {output_dir}'
 
     print()
     print("=" * 70)
