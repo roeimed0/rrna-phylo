@@ -210,10 +210,29 @@ __marimo__/
 .claude/hooks/node_modules/
 
 # rRNA-Phylo specific
+# Output directories
 backend/results/
 backend/test_data/
+backend/output/
+results/
+output/
+
+# Tree files
 *.nwk
 *.tree
+
+# Test outputs
+*_output.txt
+*_test_output.txt
+performance_test_output.txt
+
+# Temporary alignment files
+*.aln
+*.afa
+*_aligned_temp.fasta
+
+# MUSCLE temporary files
+muscle_*.fasta
 
 # Claude Code
 .claude/settings.local.json

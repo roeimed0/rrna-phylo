@@ -1,0 +1,12 @@
+# rRNA-Phylo - Ribosomal RNA Phylogenetic Analysis Pipeline
+# Python 3.9+
+
+# Core scientific computing
+numpy>=1.21.0,<2.0.0
+scipy>=1.7.0,<2.0.0
+
+# JIT compilation for performance
+numba>=0.54.0,<1.0.0
+
+# External tools (MUSCLE must be installed separately)
+# See README.md for MUSCLE installation instructions

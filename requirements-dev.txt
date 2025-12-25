@@ -1,0 +1,23 @@
+# Development dependencies for rRNA-Phylo
+
+# Include base requirements
+-r requirements.txt
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=3.0.0
+pytest-mock>=3.6.0
+
+# Code quality
+black>=22.0.0
+flake8>=4.0.0
+mypy>=0.950
+isort>=5.10.0
+
+# Development tools
+ipython>=8.0.0
+jupyter>=1.0.0
+
+# Optional: Biopython for advanced sequence handling
+# (Not required for core functionality)
+biopython>=1.79
