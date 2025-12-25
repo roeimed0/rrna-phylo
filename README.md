@@ -15,12 +15,12 @@ High-performance phylogenetic tree inference from DNA/RNA sequences using three 
 - **Automatic model selection**: Tests 5 substitution models (JC69, K80, F81, HKY85, GTR) + gamma rate variation
 - **Bootstrap analysis**: Confidence values for all branches
 - **Multiple outputs**: Newick trees, ASCII visualizations, comparison summary
-- **Pre-aligned support**: Skip alignment step for 5-30x faster analysis
+- **Pre-aligned support**: Skip alignment step for faster analysis
 
 ### Performance
-- **Site pattern compression**: 8-10x speedup for ML calculations
-- **Numba JIT compilation**: 9x speedup for likelihood calculations
-- **Combined optimization**: 72x total speedup for ML inference
+- **Site pattern compression**: speedup for ML calculations
+- **Numba JIT compilation**: speedup for likelihood calculations
+- **Combined optimization**: total speedup for ML inference
 - **MUSCLE integration**: Automatic sequence alignment with 30-minute timeout
 
 ### Quality
@@ -42,9 +42,6 @@ cd rrna-phylo
 # Install dependencies
 pip install -r requirements.txt
 
-# Install MUSCLE (required for alignment)
-# Download from: https://drive5.com/muscle/
-# Place muscle executable in PATH or project root
 ```
 
 ### Basic Usage
@@ -101,7 +98,7 @@ Located in `backend/data/test/`:
 
 | Dataset | Sequences | Alignment | Speed (pre-aligned) | Use Case |
 |---------|-----------|-----------|---------------------|----------|
-| **birds_test** ⭐ | 35 | 1,865 bp | ~15 sec | **Recommended - diverse birds + turtle outgroup** |
+| **birds_test** | 35 | 1,865 bp | ~15 sec | **Recommended - diverse birds + turtle outgroup** |
 | mammals_test | 33 | 2,132 bp | ~10 sec | Mammalian phylogeny |
 | cartilaginous_fish_test | 28 | 1,827 bp | ~8 sec | Sharks and rays |
 | Arcosauria_test | 111 | 1,916 bp | ~30 sec | Stress testing only (too diverse) |
